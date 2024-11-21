@@ -371,7 +371,7 @@ def test_dump_default_config_unicode_path(
         patch("builtins.open", mock_open()) as mock_file,
     ):
         dump_default_config()
-    mock_file.assert_called_once_with(unicode_path, "w")
+    mock_file.assert_called_once_with(unicode_path, "w", encoding="utf-8")
 
 
 def test_dump_default_config_disk_full_error(
@@ -438,7 +438,9 @@ def test_dump_default_config_existing_file_overwrite(
             ["overwrite", "cancel"],
             default="Cancel",
         )
-        mock_file.assert_called_once_with(mock_default_config_path, "w")
+        mock_file.assert_called_once_with(
+            mock_default_config_path, "w", encoding="utf-8"
+        )
         mock_file().write.assert_called_once_with(mock_generate_content)
 
 

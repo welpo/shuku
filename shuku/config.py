@@ -411,7 +411,7 @@ def dump_default_config() -> None:
                 logging.warning("Configuration creation cancelled.")
                 sys.exit(0)
         Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         logging.success(f"Configuration file created: {file_path}")  # type: ignore
     except OSError as e:
