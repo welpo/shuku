@@ -4,11 +4,23 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
-## 0.0.1-alpha - 2024-11-21
+## 0.0.1-rc.0 - 2024-11-21
 
 ### ✨ Features
 
 - Initial release ([0153329](https://github.com/welpo/shuku/commit/01533294eb6bae548112c8a16b5b025c2ae134ea)) by [@welpo](https://github.com/welpo)
+
+### 🐛 Bug fixes
+
+- *(config)* Dump default config in UTF-8 ([8f6647b](https://github.com/welpo/shuku/commit/8f6647bdc205dc11fb3145b8b67528b873631eb5))
+
+### 📝 Documentation
+
+- *(CONTRIBUTING)* Include dev in poetry install command ([00987ce](https://github.com/welpo/shuku/commit/00987ce9d9fe927e6de8fb38af3fba0de00c485b))
+
+### 🔧 Miscellaneous tasks
+
+- *(git-cliff)* Ignore pre-releases ([6223d99](https://github.com/welpo/shuku/commit/6223d99b2d869150cfaac878cf358185febf16a5))
 
 ### 👥 New contributors
 
