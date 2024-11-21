@@ -1,0 +1,8 @@
+[ti:unsorted subs]
+[tool:shuku]
+[ve:0.0.1]
+[by:https://github.com/welpo/shuku]
+
+[00:00.00]This is the first subtitle, but it appears second in the file.
+[00:06.00]This is the second subtitle, but it appears first in the file.
+[00:12.00]This is the last subtitle chronologically, appearing third in the file.

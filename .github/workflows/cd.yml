@@ -1,0 +1,196 @@
+name: Continuous Deployment
+
+on:
+  push:
+    tags:
+      - '**[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  check-prerelease:
+    runs-on: ubuntu-24.04
+    outputs:
+      is_prerelease: ${{ steps.check_tag.outputs.is_prerelease }}
+    steps:
+      - id: check_tag
+        run: |
+          if [[ ${{ github.ref_name }} =~ .*(alpha|beta|rc|pre-release|prerelease).* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: check-prerelease
+    strategy:
+      matrix:
+        os: [macos-14, ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "poetry"
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Build executable
+        env:
+          NUITKA_WORKFLOW_INPUTS: >-
+            {
+              "standalone": true,
+              "onefile": true,
+              "assume-yes-for-downloads": true,
+              "output-dir": "build",
+              "output-file": "${{ startsWith(matrix.os, 'windows') && 'shuku.exe' || 'shuku' }}"
+            }
+        shell: bash
+        run: poetry run python -m nuitka --github-workflow-options shuku/cli.py
+
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'build/shuku*'
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: shuku-${{ runner.os }}-build
+          path: build/shuku*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  package:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download all builds
+        uses: actions/download-artifact@v4
+        with:
+          path: builds
+          pattern: shuku-*-build
+          merge-multiple: false
+
+      - name: Package builds
+        run: |
+          mkdir -p dist
+          for build in builds/*; do
+            os_name=$(basename "$build" -build)
+            case "$os_name" in
+              "shuku-Linux")
+                platform="x86_64-unknown-linux-gnu"
+                archive_cmd="tar -cJf"
+                ext=".tar.xz"
+                ;;
+              "shuku-macOS")
+                platform="x86_64-apple-darwin"
+                archive_cmd="tar -cJf"
+                ext=".tar.xz"
+                ;;
+              "shuku-Windows")
+                platform="x86_64-pc-windows-msvc"
+                archive_cmd="zip -j"
+                ext=".zip"
+                ;;
+            esac
+
+            archive_name="shuku-${platform}${ext}"
+            (cd "$build" && $archive_cmd "../../dist/$archive_name" shuku*)
+            (cd dist && sha256sum "$archive_name" > "$archive_name.sha256")
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: shuku-release-artifacts
+          path: dist/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  create-release:
+    needs: [package, check-prerelease]
+    runs-on: ubuntu-24.04
+    env:
+      GIT_PAGER: cat
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for git-cliff.
+
+      - name: Configure GPG key
+        run: |
+          echo -n ${{ secrets.GPG_PRIVATE_KEY }} | base64 --decode | gpg --import
+
+      - name: Configure Git
+        run: |
+          git config --global user.signingkey 5A0CE9AF76DFF0A291BF48F81ECA47E21055F162
+          git config --global commit.gpgsign true
+          git config --global user.name "welpo"
+          git config --global user.email "welpo@users.noreply.github.com"
+
+      - name: Install git-cliff & poetry
+        run: pipx install git-cliff poetry
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "poetry"
+
+      - name: Configure PyPI token
+        run: |
+          if [[ "${{ needs.check-prerelease.outputs.is_prerelease }}" == "true" ]]; then
+            poetry config repositories.test-pypi https://test.pypi.org/legacy/
+            poetry config pypi-token.test-pypi ${{ secrets.TESTPYPI_API_TOKEN }}
+          else
+            poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+          fi
+
+      - name: Build and publish to PyPI
+        run: |
+          if [[ "${{ needs.check-prerelease.outputs.is_prerelease }}" == "true" ]]; then
+            poetry publish --build -r test-pypi
+          else
+            poetry publish --build
+          fi
+
+      - name: Generate release notes
+        run: |
+          # Generate changelog.
+          git-cliff --latest --strip all > changelog.md
+          # Append release notice.
+          cat changelog.md assets/release-notice.md > full_changelog.md
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: shuku-release-artifacts
+          path: dist
+
+      - name: Create GitHub release
+        env:
+          PRERELEASE_FLAG: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && '--prerelease' || '' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "Release ${{ github.ref_name }}" \
+            --notes-file full_changelog.md \
+            $PRERELEASE_FLAG \
+            ./dist/*

@@ -1,0 +1,53 @@
+name: "Feature request"
+description: "Suggest an idea for shuku"
+labels: ["enhancement"]
+body:
+- type: markdown
+  attributes:
+    value: |
+      Thanks for taking the time to suggest a new feature for shuku!
+
+- type: textarea
+  attributes:
+    label: "Summary"
+    description: "Briefly describe what this feature request is about."
+    placeholder: "Add support for processing YouTube videos directly from URLs"
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Motivation"
+    description: "Why should this feature be implemented? How will it benefit shuku and its users?"
+    placeholder: |
+      This feature would allow users to easily create condensed versions of YouTube videos without
+      having to download them manually first. It would make shuku more convenient for language
+      learners who use YouTube videos as learning material.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Detailed description"
+    description: "Please provide a detailed description of the proposed feature, including any suggestions you have for how it could be implemented."
+    placeholder: |
+      The feature could work by:
+      1. Accepting a YouTube URL as input
+      2. Using a library like yt-dlp to download the video and subtitles
+      3. Processing the downloaded content using shuku's existing functionality
+      4. Optionally, deleting the original downloaded files after processing
+
+      It might require adding yt-dlp as a dependency and implementing a URL validation step.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Additional context"
+    description: "Add any other context about the feature request here. If this feature request is related to a problem, please describe it."
+    placeholder: |
+      Currently, users need to manually download YouTube videos before using shuku, which adds an extra step.
+
+      This feature could also potentially be extended to support other video streaming platforms in the future.
+  validations:
+    required: false

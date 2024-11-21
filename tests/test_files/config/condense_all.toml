@@ -1,0 +1,17 @@
+output_suffix = "_TLDR"
+clean_output_filename = false
+
+
+[condensed_video]
+enabled = true
+video_codec = "copy"
+
+
+[condensed_audio]
+enabled = true
+audio_codec = "ogg"
+
+
+[condensed_subtitles]
+enabled = true
+format = "srt"

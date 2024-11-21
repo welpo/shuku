@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "shuku"
+version = "0.0.1"
+description = "A command-line tool for condensing video and audio files based on subtitle timestamps, optimizing media content for language learning and study."
+authors = ["Óscar Fernández <osc@osc.garden>"]
+license = "GPL-3.0-or-later"
+homepage = "https://github.com/welpo/shuku"
+repository = "https://github.com/welpo/shuku"
+documentation = "https://github.com/welpo/shuku"
+readme = "README.md"
+keywords = ["media-condensation", "video", "audio", "subtitle", "subtitles", "condenser", "language learning", "immersion learning", "summarization"]
+classifiers = [
+    "Environment :: Console",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Education",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Multimedia :: Video",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.scripts]
+shuku = "shuku.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pysubs2 = "^1.7.3"
+python-ffmpeg = "^2.0.12"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.1"
+pytest = "^8.3.2"
+pytest-cov = "^5.0.0"
+ruff = "^0.5.7"
+nuitka = "^2.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+strict_equality = true
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+logger-objects = ["logging_setup.logger"]
+select = ["I"]
+
+[[tool.mypy.overrides]]
+module = "pysubs2.*"
+ignore_missing_imports = true
+[[tool.mypy.overrides]]
+module = "ffmpeg.*"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+omit = [
+    "*/shuku/demo_utils.py",
+]

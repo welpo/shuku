@@ -1,0 +1,11 @@
+clean_output_filename = false
+padding = 0
+
+condensed_audio.enabled = true
+condensed_audio.audio_codec = "libmp3lame"
+condensed_audio.audio_quality = "v9"
+
+condensed_subtitles.enabled = true
+condensed_subtitles.format = "srt"
+
+condensed_video.enabled = true

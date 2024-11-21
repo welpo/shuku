@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shuku visualisation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <style>
+        body {
+            font-family: "SF Pro Text","Myriad Set Pro","SF Pro Icons","Apple Legacy Chevron","Helvetica Neue","Helvetica","Arial",sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f7;
+            margin: 0;
+            padding: 20px;
+            color: #1d1d1f;
+        }
+
+        #drop-zone {
+            width: 100%;
+            max-width: 800px;
+            height: 120px;
+            border: 2px dashed #86868b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        #drop-zone.drag-over {
+            background-color: #f2f2f7;
+            border-color: #0071e3;
+        }
+
+        #drop-zone p {
+            margin: 0;
+            font-size: 16px;
+            color: #86868b;
+        }
+
+        #drop-zone .icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #0071e3;
+        }
+
+        #animation-container {
+            background-color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .label {
+            font-weight: 600;
+            font-size: 16px;
+            fill: #1d1d1f;
+        }
+
+        .duration {
+            font-size: 14px;
+            fill: #86868b;
+        }
+
+        #info-panel {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #86868b;
+        }
+    </style>
+</head>
+<body>
+    <div id="drop-zone">
+        <span class="icon">📁</span>
+        <p>Drop JSON files here or click to select</p>
+    </div>
+    <div id="animation-container"></div>
+    <div id="info-panel"></div>
+    <script>
+        const ANIMATION_SETTINGS = {
+            ANIMATION_SPEED: 1,
+            BACKGROUND_COLOR: "#f2f2f7",
+            SEGMENT_COLOR: "#0071e3",
+            FONT_SIZE: 16,
+            SHOW_LABELS: true
+        };
+
+        const DIMENSIONS = {
+            MARGIN: {top: 60, right: 20, bottom: 20, left: 20},
+            WIDTH: 800,
+            HEIGHT: 240,
+            BAR_HEIGHT: 40
+        };
+
+        const ANIMATION_TIMINGS = {
+            SHOW_INPUT: 1000 / ANIMATION_SETTINGS.ANIMATION_SPEED,
+            SHOW_SEGMENTS: 2000 / ANIMATION_SETTINGS.ANIMATION_SPEED,
+            SHOW_OUTPUT: 900 / ANIMATION_SETTINGS.ANIMATION_SPEED,
+            FADE_OUT: 800 / ANIMATION_SETTINGS.ANIMATION_SPEED,
+            PAUSE_BETWEEN_FILES: 1000 / ANIMATION_SETTINGS.ANIMATION_SPEED,
+            TOTAL_LOOP: 8500 / ANIMATION_SETTINGS.ANIMATION_SPEED
+        };
+
+        let filesData = [];
+
+        const dropZone = document.getElementById('drop-zone');
+        const infoPanel = document.getElementById('info-panel');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('drag-over');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => document.getElementById('file-input').click());
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'file-input';
+        fileInput.multiple = true;
+        fileInput.accept = '.json';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = [...dt.files];
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            filesData = [];
+            let processedFiles = 0;
+
+            files.forEach(file => {
+                if (file.type === "application/json") {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const jsonData = JSON.parse(e.target.result);
+                            filesData.push({
+                                name: file.name.replace(' segments.json', ''),
+                                data: jsonData
+                            });
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                        }
+                        processedFiles++;
+                        if (processedFiles === files.length) {
+                            startAnimation();
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    processedFiles++;
+                }
+            });
+
+            if (files.length === 0) {
+                infoPanel.innerHTML = "No valid files selected.";
+            }
+        }
+
+        function startAnimation() {
+            if (filesData.length > 0) {
+                runAnimationSequence();
+                updateInfoPanel();
+            } else {
+                infoPanel.innerHTML = "No valid JSON files found.";
+            }
+        }
+
+        function updateInfoPanel() {
+            infoPanel.innerHTML = `${filesData.length} file(s) loaded. Animation will loop through all files.`;
+        }
+
+        function runAnimationSequence() {
+            let index = 0;
+
+            function animateNext() {
+                if (index < filesData.length) {
+                    runAnimation(filesData[index].name, filesData[index].data);
+                    index++;
+                    setTimeout(animateNext, ANIMATION_TIMINGS.TOTAL_LOOP);
+                } else {
+                    index = 0;
+                    setTimeout(animateNext, ANIMATION_TIMINGS.PAUSE_BETWEEN_FILES);
+                }
+            }
+
+            animateNext();
+        }
+
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            const parts = [];
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0) parts.push(`${minutes}m`);
+            if (remainingSeconds > 0) parts.push(`${remainingSeconds}s`);
+            return parts.join(' ');
+        }
+
+        function runAnimation(filmName, data) {
+            // Clear previous animation.
+            d3.select("#animation-container").selectAll("*").remove();
+
+            // Set up SVG.
+            const width = DIMENSIONS.WIDTH - DIMENSIONS.MARGIN.left - DIMENSIONS.MARGIN.right;
+            const height = DIMENSIONS.HEIGHT - DIMENSIONS.MARGIN.top - DIMENSIONS.MARGIN.bottom;
+
+            const svg = d3.select("#animation-container").append("svg")
+                .attr("width", DIMENSIONS.WIDTH)
+                .attr("height", DIMENSIONS.HEIGHT)
+                .append("g")
+                .attr("transform", `translate(${DIMENSIONS.MARGIN.left},${DIMENSIONS.MARGIN.top})`);
+
+            // Create scales.
+            const xScale = d3.scaleLinear()
+                .domain([0, data.totalDuration])
+                .range([0, width]);
+
+            // Create background (whole file).
+            const background = svg.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width)
+                .attr("height", DIMENSIONS.BAR_HEIGHT)
+                .attr("fill", ANIMATION_SETTINGS.BACKGROUND_COLOR)
+                .style("opacity", 0);
+
+            // Create speech segments.
+            const segments = svg.selectAll("rect.segment")
+                .data(data.segments)
+                .enter()
+                .append("rect")
+                .attr("class", "segment")
+                .attr("x", d => xScale(d.start))
+                .attr("y", 0)
+                .attr("width", d => xScale(d.duration))
+                .attr("height", DIMENSIONS.BAR_HEIGHT)
+                .attr("fill", ANIMATION_SETTINGS.SEGMENT_COLOR)
+                .style("opacity", 0);
+
+            // Calculate total condensed duration.
+            const totalCondensedDuration = data.segments.reduce((sum, segment) => sum + segment.duration, 0);
+
+            // Add labels and durations.
+            const inputLabel = svg.append("text")
+                .attr("class", "label")
+                .attr("x", width / 2)
+                .attr("y", -30)
+                .attr("text-anchor", "middle")
+                .text(filmName)
+                .style("opacity", 0)
+                .style("font-size", ANIMATION_SETTINGS.FONT_SIZE);
+
+            const inputDuration = svg.append("text")
+                .attr("class", "duration")
+                .attr("x", width / 2)
+                .attr("y", -10)
+                .attr("text-anchor", "middle")
+                .text(`${formatDuration(data.totalDuration)}`)
+                .style("opacity", 0);
+
+            const outputLabel = svg.append("text")
+                .attr("class", "label")
+                .attr("x", width / 2)
+                .attr("y", DIMENSIONS.BAR_HEIGHT + 70)
+                .attr("text-anchor", "middle")
+                .text(filmName + " (condensed)")
+                .style("opacity", 0)
+                .style("font-size", ANIMATION_SETTINGS.FONT_SIZE);
+
+            const outputDuration = svg.append("text")
+                .attr("class", "duration")
+                .attr("x", width / 2)
+                .attr("y", DIMENSIONS.BAR_HEIGHT + 90)
+                .attr("text-anchor", "middle")
+                .text(`${formatDuration(totalCondensedDuration)}`)
+                .style("opacity", 0);
+
+            const condensedOutput = svg.append("rect")
+                .attr("x", 0)
+                .attr("y", DIMENSIONS.BAR_HEIGHT + 100)
+                .attr("width", 0)
+                .attr("height", DIMENSIONS.BAR_HEIGHT)
+                .attr("fill", ANIMATION_SETTINGS.SEGMENT_COLOR)
+                .style("opacity", 0);
+
+            const t1 = d3.transition().duration(ANIMATION_TIMINGS.SHOW_INPUT);
+            const t2 = d3.transition().duration(ANIMATION_TIMINGS.SHOW_SEGMENTS).delay(ANIMATION_TIMINGS.SHOW_INPUT);
+            const t3 = d3.transition().duration(ANIMATION_TIMINGS.SHOW_OUTPUT).delay(ANIMATION_TIMINGS.SHOW_INPUT + ANIMATION_TIMINGS.SHOW_SEGMENTS);
+            const t4 = d3.transition().duration(ANIMATION_TIMINGS.FADE_OUT).delay(ANIMATION_TIMINGS.TOTAL_LOOP - ANIMATION_TIMINGS.FADE_OUT);
+
+            // Step 1: Show input title and background simultaneously.
+            background.transition(t1).style("opacity", 1);
+            inputLabel.transition(t1).style("opacity", 1);
+            inputDuration.transition(t1).style("opacity", 1);
+
+            // Step 2: Show segments.
+            segments.transition(t2).style("opacity", 1);
+
+            // Step 3: Show output title and condensed output.
+            outputLabel.transition(t3).style("opacity", 1);
+            outputDuration.transition(t3).style("opacity", 1);
+            condensedOutput.transition(t3)
+                .attr("width", xScale(totalCondensedDuration))
+                .style("opacity", 1);
+
+            // Step 4: Fade out.
+            svg.selectAll("rect, text")
+                .transition(t4)
+                .style("opacity", 0);
+        }
+    </script>
+</body>
+</html>

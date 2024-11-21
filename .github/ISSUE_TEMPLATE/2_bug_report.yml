@@ -1,0 +1,88 @@
+name: "Report a bug"
+description: "Create a report to help improve shuku"
+labels: ["bug"]
+body:
+- type: textarea
+  attributes:
+      label: "System information"
+      description: |
+          Please provide the following information:
+          - shuku version: Run `shuku --version`
+          - FFmpeg version: Run `ffmpeg -version`
+          - Operating system and version
+      placeholder: |
+          shuku version or commit: 
+          FFmpeg version: 
+          Operating system: 
+  validations:
+      required: true
+
+- type: textarea
+  attributes:
+      label: "Reproduction steps"
+      description: >
+          Please describe the steps to reproduce the issue. Try to reproduce your issue with `shuku --config none` first.
+          If it isn't reproducible with `--config none`, try to find out which configuration option causes your issue.
+      placeholder: |
+          1. Run shuku with these arguments: ...
+          2. Open this type of file: ...
+          3. Perform these actions: ...
+          4. See the following error: ...
+  validations:
+      required: true
+
+- type: textarea
+  attributes:
+      label: "Expected behaviour"
+      description: "What did you expect to happen?"
+      placeholder: "shuku should have processed the file without errors."
+  validations:
+      required: true
+
+- type: textarea
+  attributes:
+      label: "Actual behaviour"
+      description: "What actually happened?"
+      placeholder: "shuku crashed with an error message."
+  validations:
+      required: true
+
+- type: textarea
+  attributes:
+      label: "Log file"
+      description: >
+          Please attach a log file. You can create one by adding the `--log-file=shuku_log.txt` option when running shuku.
+          For example: `shuku --log-file=shuku_log.txt --config none your_input_file.mp4`
+
+          Tip: You can drag and drop the log file here, or paste its contents directly.
+
+          Note: The log file may contain identifiable information, such as your username or file paths.
+          Feel free to redact any sensitive information before sharing.
+  validations:
+      required: true
+
+- type: textarea
+  attributes:
+      label: "Sample files"
+      description: >
+          If possible, please provide sample files that demonstrate the issue. This helps us reproduce and fix the problem more quickly.
+
+          You can drag and drop files here to attach them. If the files are too large to upload directly, you can use a file sharing
+          service and paste the link here.
+
+          Note: Make sure you have the right to share any files you upload.
+  validations:
+      required: false
+
+- type: checkboxes
+  attributes:
+      label: "Final checklist"
+      options:
+          - label: "I've tested with the latest version of shuku to check if the issue has already been fixed."
+            required: true
+          - label: "I've provided all the requested information, including shuku version, FFmpeg version, and OS details."
+            required: true
+          - label: "I've included a log file created while reproducing the issue."
+            required: true
+          - label: "I've double-checked that my log file and description don't contain any sensitive personal information."
+            required: true
