@@ -34,7 +34,7 @@ To set up your development environment:
 3. Install the project dependencies:
 
    ```bash
-   poetry install
+   poetry install --with dev
    ```
 
 4. Activate the virtual environment:
