@@ -48,9 +48,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --only main,build
 
-      - name: Build wheel
-        run: poetry build
-
       - name: Build executable
         env:
           NUITKA_WORKFLOW_INPUTS: >-
@@ -64,21 +61,10 @@ jobs:
         shell: bash
         run: poetry run python -m nuitka --github-workflow-options shuku/cli.py
 
-      - name: Generate build & wheel attestations
+      - name: Generate build attestations
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: |
-            build/shuku*
-            dist/*
-
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: shuku-${{ runner.os }}-dist
-          path: dist/*
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 14
+          subject-path: 'build/shuku*'
 
       - name: Upload build
         uses: actions/upload-artifact@v4
@@ -166,22 +152,17 @@ jobs:
           git config --global user.name "welpo"
           git config --global user.email "welpo@users.noreply.github.com"
 
-      - name: Install git-cliff
-        run: pipx install git-cliff
+      - name: Install git-cliff & poetry
+        run: pipx install git-cliff poetry
 
-      - name: Generate release notes
-        run: |
-          # Generate changelog.
-          git-cliff --latest --strip all > changelog.md
-          # Append release notice.
-          cat changelog.md assets/release-notice.md > full_changelog.md
-
-      - name: Download dist artifacts
-        uses: actions/download-artifact@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
-          pattern: shuku-*-dist
-          path: wheels
-          merge-multiple: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "poetry"
+
+      - name: Build wheel
+        run: poetry build --output=wheels
 
       - name: Publish to PyPI/TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -193,7 +174,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: shuku-release-artifacts
-          path: dist
+          path: binaries
+
+      - name: Generate release notes
+        run: |
+          # Generate changelog.
+          git-cliff --latest --strip all > changelog.md
+          # Append release notice.
+          cat changelog.md assets/release-notice.md > full_changelog.md
 
       - name: Create GitHub release
         env:
@@ -205,4 +193,4 @@ jobs:
             --title "Release ${{ github.ref_name }}" \
             --notes-file full_changelog.md \
             $PRERELEASE_FLAG \
-            ./dist/*
+            ./binaries/*
