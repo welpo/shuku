@@ -11,6 +11,8 @@
         <img src="https://img.shields.io/github/actions/workflow/status/welpo/shuku/.github%2Fworkflows%2Fci.yml?label=CI&style=flat-square&labelColor=202b2d&color=3b5669" alt="Continuous Integration"></a>
     <a href="https://github.com/welpo/shuku/actions/workflows/cd.yml">
         <img src="https://img.shields.io/github/actions/workflow/status/welpo/shuku/.github%2Fworkflows%2Fcd.yml?label=CD&style=flat-square&labelColor=202b2d&color=3b5669" alt="Continuous Deployment"></a>
+    <a href="https://pypi.org/project/shuku/">
+        <img src="https://img.shields.io/pypi/pyversions/shuku?style=flat-square&labelColor=202b2d&color=3b5669" alt="Python versions"></a>
     <a href="https://github.com/psf/black">
         <img src="https://img.shields.io/badge/code_style-black-000000?style=flat-square&labelColor=202b2d&color=black" alt="Code style: black"></a>
     <a href="https://github.com/welpo/shuku/blob/main/COPYING">
