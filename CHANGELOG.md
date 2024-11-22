@@ -4,7 +4,7 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
-## 0.0.1-rc.4 - 2024-11-22
+## 0.0.2 - 2024-11-22
 
 ### ✨ Features
 
@@ -21,6 +21,7 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 - *(README)* Add badges for CI & CD ([ca3f76c](https://github.com/welpo/shuku/commit/ca3f76c85d68e59b70a576b1f71b6cc7a2136aea)) by [@welpo](https://github.com/welpo)
 - *(README)* Compare similar projects with badges ([7558e91](https://github.com/welpo/shuku/commit/7558e9135da4e5814f8d0a17b020b33f4218dd64)) by [@welpo](https://github.com/welpo)
 - *(README)* Improve installation instructions ([14e6bc1](https://github.com/welpo/shuku/commit/14e6bc15bf8559b5c720fd52bbae29a536a00873)) by [@welpo](https://github.com/welpo)
+- *(release)* Update notice to link GitHub Actions workflow ([d909bb2](https://github.com/welpo/shuku/commit/d909bb2991d22d1e590872fdfbd661c9e3483fd3))
 - *(release)* Recommend `pipx` and link attestations ([b333c4b](https://github.com/welpo/shuku/commit/b333c4bd741e30329c91be4e66d71d04d6f8b628)) by [@welpo](https://github.com/welpo)
 
 ### ♻️ Refactor
@@ -33,7 +34,7 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 
 ### 🔧 Miscellaneous tasks
 
-- *(CD)* Build wheels once ([2ed4d03](https://github.com/welpo/shuku/commit/2ed4d03d269548fd0be64f1b9fab015e9bbb9d1e))
+- *(CD)* Build wheels once ([2ed4d03](https://github.com/welpo/shuku/commit/2ed4d03d269548fd0be64f1b9fab015e9bbb9d1e)) by [@welpo](https://github.com/welpo)
 - *(CD)* Install only main and build ([169f08c](https://github.com/welpo/shuku/commit/169f08c0fbcac3cf27f0e82b54a9936f96d42144)) by [@welpo](https://github.com/welpo)
 - *(CD)* Stop trying to upload binaries to PyPI ([b08a6c5](https://github.com/welpo/shuku/commit/b08a6c52ca22bf55209e2b9e8bd921e87c243542)) by [@welpo](https://github.com/welpo)
 - *(CD)* Pypi trusted publishing & publish all wheels ([83942f0](https://github.com/welpo/shuku/commit/83942f0ae9f382920a3e012c453dd71f335148ca)) by [@welpo](https://github.com/welpo)
