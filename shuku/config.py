@@ -77,11 +77,9 @@ CONFIG_OPTIONS = {
         default_value=" (condensed)",
     ),
     "if_file_exists": ConfigItem(
-        description=f"What to do when output file exists. Choices: {', '.join(FILE_EXISTS_OPTIONS)}",
+        description=f"What to do when output file exists.",
         default_value="ask",
-        validators=[
-            lambda x: isinstance(x, str) and x in FILE_EXISTS_OPTIONS,
-        ],
+        choices=FILE_EXISTS_OPTIONS,
     ),
     "padding": ConfigItem(
         description="Padding in seconds to add before and after each subtitle.",
