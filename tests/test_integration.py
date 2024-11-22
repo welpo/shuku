@@ -246,8 +246,13 @@ def test_condense_unsorted_subs_lrc(tmp_path):
     assert result.returncode == 0, "shuku failed with config"
     output = tmp_path / "unsorted_subs (condensed).lrc"
     assert output.exists(), "LRC file was not created with config"
-    assert compute_file_hash(output) == compute_file_hash(
-        expected_output
+
+    def read_lrc_ignoring_version(file_path: Path) -> str:
+        with open(file_path, "r") as f:
+            return "".join(line for line in f if not line.startswith("[ve:"))
+
+    assert read_lrc_ignoring_version(output) == read_lrc_ignoring_version(
+        Path(expected_output)
     ), "Condensed file content differs from expected output"
     with open(output, "r") as f:
         content = f.read()
