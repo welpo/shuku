@@ -48,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
+      - name: Build wheel
+        run: poetry build
+
       - name: Build executable
         env:
           NUITKA_WORKFLOW_INPUTS: >-
@@ -61,10 +64,21 @@ jobs:
         shell: bash
         run: poetry run python -m nuitka --github-workflow-options shuku/cli.py
 
-      - name: Generate build attestation
+      - name: Generate build & wheel attestations
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: 'build/shuku*'
+          subject-path: |
+            build/shuku*
+            dist/*
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: shuku-${{ runner.os }}-dist
+          path: dist/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
 
       - name: Upload build
         uses: actions/upload-artifact@v4
@@ -131,6 +145,9 @@ jobs:
   create-release:
     needs: [package, check-prerelease]
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'testpypi' || 'pypi' }}
+      url: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'https://test.pypi.org/p/shuku' || 'https://pypi.org/p/shuku' }}
     env:
       GIT_PAGER: cat
     steps:
@@ -149,31 +166,8 @@ jobs:
           git config --global user.name "welpo"
           git config --global user.email "welpo@users.noreply.github.com"
 
-      - name: Install git-cliff & poetry
-        run: pipx install git-cliff poetry
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: "poetry"
-
-      - name: Configure PyPI token
-        run: |
-          if [[ "${{ needs.check-prerelease.outputs.is_prerelease }}" == "true" ]]; then
-            poetry config repositories.test-pypi https://test.pypi.org/legacy/
-            poetry config pypi-token.test-pypi ${{ secrets.TESTPYPI_API_TOKEN }}
-          else
-            poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-          fi
-
-      - name: Build and publish to PyPI
-        run: |
-          if [[ "${{ needs.check-prerelease.outputs.is_prerelease }}" == "true" ]]; then
-            poetry publish --build -r test-pypi
-          else
-            poetry publish --build
-          fi
+      - name: Install git-cliff
+        run: pipx install git-cliff
 
       - name: Generate release notes
         run: |
@@ -182,11 +176,23 @@ jobs:
           # Append release notice.
           cat changelog.md assets/release-notice.md > full_changelog.md
 
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: shuku-*-dist
+          path: dist
+          merge-multiple: true
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
           name: shuku-release-artifacts
           path: dist
+
+      - name: Publish to PyPI/TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'https://test.pypi.org/legacy/' || '' }}
 
       - name: Create GitHub release
         env:
