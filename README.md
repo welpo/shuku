@@ -126,11 +126,17 @@ https://github.com/user-attachments/assets/ae06b259-7043-423a-8895-5e8a60a32e37
    brew install ffmpeg
    ```
 
-2. Download a [pre-built binary](https://github.com/welpo/shuku/releases) or install from pip (recommended):
+For Windows, here's [a good guide](https://phoenixnap.com/kb/ffmpeg-windows).
+
+2. Install shuku with [pipx](https://github.com/pypa/pipx) (recommended) or pip:
 
    ```bash
+   pipx install shuku
+   # or
    pip install shuku
    ```
+
+Alternatively, download a [pre-built binary](https://github.com/welpo/shuku/releases).
 
 ## Quick start
 
