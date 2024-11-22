@@ -180,19 +180,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: shuku-*-dist
-          path: dist
+          path: wheels
           merge-multiple: true
+
+      - name: Publish to PyPI/TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'https://test.pypi.org/legacy/' || '' }}
+          packages-dir: wheels
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
           name: shuku-release-artifacts
           path: dist
-
-      - name: Publish to PyPI/TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'https://test.pypi.org/legacy/' || '' }}
 
       - name: Create GitHub release
         env:
