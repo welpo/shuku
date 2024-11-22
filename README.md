@@ -70,7 +70,7 @@ https://github.com/user-attachments/assets/ae06b259-7043-423a-8895-5e8a60a32e37
 ## Comparison with similar tools
 
 | Feature | [shuku](#comparison-with-other-tools) | [impd](https://github.com/Ajatt-Tools/impd) | [Condenser](https://github.com/ercanserteli/condenser) |
-|---------|-------|------|-----------|
+|---------|:-------:|:------:|:-----------:|
 | **Platform support** |
 | GNU+Linux | ✅ | ✅ | ❌ |
 | macOS | ✅ | ❌ | ❌ |
@@ -108,6 +108,14 @@ https://github.com/user-attachments/assets/ae06b259-7043-423a-8895-5e8a60a32e37
 | Season number | ✅ | ❌ | ❌ |
 | Clean media title | ✅ | ❌ | ❌ |
 
+| [shuku](https://github.com/welpo/shuku) | [impd](https://github.com/Ajatt-Tools/impd) | [Condenser](https://github.com/ercanserteli/condenser) |
+|:----------------------------------------:|:-------------------------------------------:|:---------------------------------------------------:|
+| ![License](https://img.shields.io/github/license/welpo/shuku?style=flat-square) | ![License](https://img.shields.io/github/license/Ajatt-Tools/impd?style=flat-square) | ![License](https://img.shields.io/github/license/ercanserteli/condenser?style=flat-square) |
+| ![Stars](https://img.shields.io/github/stars/welpo/shuku?style=flat-square) | ![Stars](https://img.shields.io/github/stars/Ajatt-Tools/impd?style=flat-square) | ![Stars](https://img.shields.io/github/stars/ercanserteli/condenser?style=flat-square) |
+| ![Contributors](https://img.shields.io/github/contributors/welpo/shuku?style=flat-square) | ![Contributors](https://img.shields.io/github/contributors/Ajatt-Tools/impd?style=flat-square) | ![Contributors](https://img.shields.io/github/contributors/ercanserteli/condenser?style=flat-square) |
+| ![Last Commit](https://img.shields.io/github/last-commit/welpo/shuku?style=flat-square) | ![Last Commit](https://img.shields.io/github/last-commit/Ajatt-Tools/impd?style=flat-square) | ![Last Commit](https://img.shields.io/github/last-commit/ercanserteli/condenser?style=flat-square) |
+| ![Top Language](https://img.shields.io/github/languages/top/welpo/shuku?style=flat-square) | ![Top Language](https://img.shields.io/github/languages/top/Ajatt-Tools/impd?style=flat-square) | ![Top Language](https://img.shields.io/github/languages/top/ercanserteli/condenser?style=flat-square) |
+| ![Code Coverage](https://img.shields.io/codecov/c/gh/welpo/shuku?style=flat-square) | ![Code Coverage](https://img.shields.io/codecov/c/gh/Ajatt-Tools/impd?style=flat-square) | ![Code Coverage](https://img.shields.io/codecov/c/gh/ercanserteli/condenser?style=flat-square) |
 > [!IMPORTANT]
 > If you feel the comparisons are incomplete or unfair, please [file an issue](https://github.com/welpo/shuku/issues/new?&labels=bug&template=2_bug_report.yml) so this page can be improved. Even better, submit a pull request!
 
