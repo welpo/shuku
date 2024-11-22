@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Pre-release hook for the release script: https://github.com/welpo/release
+VERSION_TAG="$1"
+VERSION="${VERSION_TAG#v}"  # Remove the 'v' prefix.
+
+# Update pyproject.toml
+poetry version "$VERSION"
+
+# Update fallback version in code.
+# -i: edit file in place
+# -pe: print and execute perl command
+perl -i -pe 's/(VERSION = )['\''"]\K[^'\''"]+(?=['\''"])/'$VERSION'/g if /VERSION = .*Managed by '\''release'\'' script/' "shuku/cli.py"
+
+echo "Updated version in cli.py to:"
+grep "VERSION = " "shuku/cli.py" | grep "Managed by 'release' script" || {
+    echo "Error: Version update failed"
+    exit 1
+}

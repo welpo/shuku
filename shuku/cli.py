@@ -79,7 +79,7 @@ try:
 
     VERSION = version(PROGRAM_NAME)
 except ImportError:  # pragma: no cover
-    VERSION = "0.0.1"  # Should match pyproject.toml.
+    VERSION = "0.0.1"  # Managed by 'release' script.
 
 
 class FileProcessingError(Exception):
