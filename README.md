@@ -1,12 +1,16 @@
 <p align="center">
-   <a href="CONTRIBUTING.md#pull-requests">
+    <a href="CONTRIBUTING.md#pull-requests">
         <img src="https://img.shields.io/badge/PRs-welcome-0?style=flat-square&labelColor=202b2d&color=3b5669" alt="PRs welcome"></a>
     <a href="https://pypi.org/project/shuku/">
          <img src="https://img.shields.io/pypi/v/shuku?style=flat-square&labelColor=202b2d&color=3b5669" alt="PyPI version"></a>
-   <a href="https://github.com/welpo/shuku/releases">
+    <a href="https://github.com/welpo/shuku/releases">
         <img src="https://img.shields.io/github/v/release/welpo/shuku?style=flat-square&labelColor=202b2d&color=3b5669" alt="Latest release"></a>
     <a href="https://codecov.io/gh/welpo/shuku">
         <img src="https://img.shields.io/codecov/c/gh/welpo/shuku?style=flat-square&labelColor=202b2d&color=3b5669" alt="Codecov"></a>
+    <a href="https://github.com/welpo/shuku/actions/workflows/ci.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/welpo/shuku/.github%2Fworkflows%2Fci.yml?label=CI&style=flat-square&labelColor=202b2d&color=3b5669" alt="Continuous Integration"></a>
+    <a href="https://github.com/welpo/shuku/actions/workflows/cd.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/welpo/shuku/.github%2Fworkflows%2Fcd.yml?label=CD&style=flat-square&labelColor=202b2d&color=3b5669" alt="Continuous Deployment"></a>
     <a href="https://github.com/psf/black">
         <img src="https://img.shields.io/badge/code_style-black-000000?style=flat-square&labelColor=202b2d&color=black" alt="Code style: black"></a>
     <a href="https://github.com/welpo/shuku/blob/main/COPYING">
