@@ -46,7 +46,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --only main,build
 
       - name: Build wheel
         run: poetry build
