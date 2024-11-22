@@ -2,7 +2,7 @@
 ---
 
 > [!IMPORTANT]
-> The recommended install method is `pip install shuku`. Pre-compiled binaries take longer to boot and require manual approval:
+> The recommended install method is `pipx install shuku` or `pip install shuku`. Pre-compiled binaries take longer to boot and require manual approval:
 >
 > - macOS: Right-click → Open.
 > - Windows: More info → Run anyway.
@@ -11,7 +11,7 @@
 > [!TIP]
 > ### Verifying build provenance
 >
-> These binaries include Sigstore attestations that prove they were built by the GitHub Actions workflow. To verify:
+> These binaries include Sigstore [attestations](https://github.com/welpo/shuku/attestations) that prove they were built by the GitHub Actions workflow. To verify:
 >
 > 1. Install the GitHub CLI: https://cli.github.com
 > 2. Run:
