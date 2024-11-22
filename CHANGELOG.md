@@ -4,7 +4,7 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
-## 0.0.1-rc.2 - 2024-11-22
+## 0.0.1-rc.3 - 2024-11-22
 
 ### ✨ Features
 
@@ -33,6 +33,8 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 
 ### 🔧 Miscellaneous tasks
 
+- *(CD)* Install only main and build ([169f08c](https://github.com/welpo/shuku/commit/169f08c0fbcac3cf27f0e82b54a9936f96d42144))
+- *(CD)* Stop trying to upload binaries to PyPI ([b08a6c5](https://github.com/welpo/shuku/commit/b08a6c52ca22bf55209e2b9e8bd921e87c243542))
 - *(CD)* Pypi trusted publishing & publish all wheels ([83942f0](https://github.com/welpo/shuku/commit/83942f0ae9f382920a3e012c453dd71f335148ca)) by [@welpo](https://github.com/welpo)
 - *(CD)* Create attestation for packaged executables ([cf4caf2](https://github.com/welpo/shuku/commit/cf4caf22253052a3b44a862cb045516ef466a42e)) by [@welpo](https://github.com/welpo)
 - *(git-cliff)* Ignore pre-releases ([6223d99](https://github.com/welpo/shuku/commit/6223d99b2d869150cfaac878cf358185febf16a5)) by [@welpo](https://github.com/welpo)
