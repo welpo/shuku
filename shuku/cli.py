@@ -738,13 +738,17 @@ def filter_skip_patterns_in_place(
 
 def get_skipped_chapter_intervals(context: Context) -> list[tuple[float, float]]:
     skip_titles = context.config.get("skip_chapters", [])
-    logging.debug(f"Skipping chapters with titles: {', '.join(skip_titles)}")
-    chapters = context.stream_info["chapters"]
-    return [
-        (float(ch["start_time"]), float(ch["end_time"]))
-        for ch in chapters
-        if ch["tags"]["title"].lower() in skip_titles
+    matched_chapters = [
+        chapter
+        for chapter in context.stream_info["chapters"]
+        if chapter["tags"]["title"].lower() in skip_titles
     ]
+    if matched_chapters:
+        logging.debug(
+            f"Skipping {len(matched_chapters)} matched chapters: "
+            f"{', '.join(ch['tags']['title'] for ch in matched_chapters)}"
+        )
+    return [(float(ch["start_time"]), float(ch["end_time"])) for ch in matched_chapters]
 
 
 def filter_chapters_in_place(

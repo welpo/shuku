@@ -2328,6 +2328,20 @@ def test_get_skipped_chapter_intervals_case_insensitive(base_context):
     assert get_skipped_chapter_intervals(base_context) == expected
 
 
+def test_get_skipped_chapter_intervals_logs_matched_chapters(base_context, caplog):
+    base_context.config["skip_chapters"] = ["opening", "ending", "preview"]
+    base_context.stream_info["chapters"] = [
+        {"start_time": "0.0", "end_time": "30.0", "tags": {"title": "OPENING"}},
+        {"start_time": "30.0", "end_time": "60.0", "tags": {"title": "Main Story"}},
+        {"start_time": "60.0", "end_time": "90.0", "tags": {"title": "Ending"}},
+    ]
+    with caplog.at_level(logging.DEBUG):
+        get_skipped_chapter_intervals(base_context)
+        assert "Skipping 2 matched chapters" in caplog.text
+        assert "Ending" in caplog.text
+        assert "OPENING" in caplog.text
+
+
 def test_get_skipped_chapter_intervals_no_partial_matches(base_context):
     base_context.config["skip_chapters"] = ["opening"]
     base_context.stream_info["chapters"] = [
