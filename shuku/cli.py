@@ -511,8 +511,8 @@ def find_subtitles(context: Context) -> str:
         )
         if matched_sub:
             return matched_sub
-        logging.info(f"No suitable subtitles found in {location_name}.")
-    logging.info("Attempting to extract subtitles from video file…")
+        logging.debug(f"No suitable subtitles found in {location_name}.")
+    logging.info("No external subtitles found, attempting extraction from video file…")
     return extract_subtitles(context)
 
 
@@ -528,7 +528,7 @@ def find_matching_subtitle_file(
     for ext in SUBTITLE_EXTENSIONS:
         exact_sub_match = os.path.join(input_dir, f"{input_name}{ext.lower()}")
         if os.path.exists(exact_sub_match):
-            logging.info(f"Exact subtitle match found: {exact_sub_match}")
+            logging.debug(f"Exact subtitle match found: {exact_sub_match}")
             return exact_sub_match
     if external_subtitle_search == "fuzzy":
         return find_fuzzy_subtitle_match(context, input_dir, input_name)
@@ -565,12 +565,11 @@ def find_fuzzy_subtitle_match(
             f"Fuzzy match found: {best_match} (similarity: {similarity_scores[0][1]:.2f})"
         )
         return best_match
-    else:
-        logging.info(f"No fuzzy match found with threshold {threshold}.")
-        logging.debug(
-            f"Best match: {similarity_scores[0][0]} ({similarity_scores[0][1]:.2f})"
-        )
-        return None
+    logging.debug(f"No fuzzy match found with threshold {threshold}.")
+    logging.debug(
+        f"Best match: {similarity_scores[0][0]} ({similarity_scores[0][1]:.2f})"
+    )
+    return None
 
 
 def prepare_filename_for_matching(filename: str) -> str:

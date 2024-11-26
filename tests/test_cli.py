@@ -453,7 +453,7 @@ def test_find_subtitles_matching_file(base_context):
         patch("shuku.cli.os.path.exists", side_effect=[True, True]),
         patch("shuku.cli.os.path.split", return_value=("/path/to", "video.mp4")),
         patch("shuku.cli.os.path.splitext", return_value=("video", ".mp4")),
-        patch("shuku.cli.logging.info") as mock_log_info,
+        patch("shuku.cli.logging.debug") as mock_log_debug,
         patch("shuku.cli.extract_subtitles") as mock_extract,
     ):
         result = find_subtitles(base_context)
@@ -462,7 +462,7 @@ def test_find_subtitles_matching_file(base_context):
             "/path/to/video.srt",
         ]
         for message in expected_log_messages:
-            assert any(message in call[0][0] for call in mock_log_info.call_args_list)
+            assert any(message in call[0][0] for call in mock_log_debug.call_args_list)
         mock_extract.assert_not_called()
 
 
