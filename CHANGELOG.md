@@ -4,6 +4,32 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.3-rc.0](https://github.com/welpo/shuku/compare/v0.0.2..v0.0.3-rc.0) - 2024-11-26
+
+### ✨ Features
+
+- Improve skipped chapter logging ([0ff6af6](https://github.com/welpo/shuku/commit/0ff6af66b7a44243b25e77293b0f4283ed1b3130)) by [@welpo](https://github.com/welpo)
+
+### 📝 Documentation
+
+- Remove installation warning from release notice ([07bac0e](https://github.com/welpo/shuku/commit/07bac0e030f1fa659895ef7baad9ccf16b5423ba))
+- Join repository metrics w/ main comparison table ([4648a9d](https://github.com/welpo/shuku/commit/4648a9daba15ad9420b14014e873a6661f130c48)) by [@welpo](https://github.com/welpo)
+
+### ♻️ Refactor
+
+- Reduce subtitle search verbosity ([8da5423](https://github.com/welpo/shuku/commit/8da5423967d256e3aab9f0992a5d484cf30e0a03))
+
+### 🔧 Miscellaneous tasks
+
+- *(CI)* Lint with Ruff ([0b32d88](https://github.com/welpo/shuku/commit/0b32d88673b7c7d0fceac6de955c72f6e9c99235)) by [@welpo](https://github.com/welpo)
+- *(README)* Update condensation animation ([f7d1520](https://github.com/welpo/shuku/commit/f7d1520d02358991f89bc178536ad83f7c90bc79)) by [@welpo](https://github.com/welpo)
+
+### 👥 New contributors
+
+🫶 [@renovate](https://github.com/renovate)[bot] made their first contribution in [#6](https://github.com/welpo/shuku/pull/6)
+
+🫶 [@welpo](https://github.com/welpo) made their first contribution
+
 ## 0.0.2 - 2024-11-22
 
 ### ✨ Features
@@ -21,7 +47,7 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 - *(README)* Add badges for CI & CD ([ca3f76c](https://github.com/welpo/shuku/commit/ca3f76c85d68e59b70a576b1f71b6cc7a2136aea)) by [@welpo](https://github.com/welpo)
 - *(README)* Compare similar projects with badges ([7558e91](https://github.com/welpo/shuku/commit/7558e9135da4e5814f8d0a17b020b33f4218dd64)) by [@welpo](https://github.com/welpo)
 - *(README)* Improve installation instructions ([14e6bc1](https://github.com/welpo/shuku/commit/14e6bc15bf8559b5c720fd52bbae29a536a00873)) by [@welpo](https://github.com/welpo)
-- *(release)* Update notice to link GitHub Actions workflow ([d909bb2](https://github.com/welpo/shuku/commit/d909bb2991d22d1e590872fdfbd661c9e3483fd3))
+- *(release)* Update notice to link GitHub Actions workflow ([d909bb2](https://github.com/welpo/shuku/commit/d909bb2991d22d1e590872fdfbd661c9e3483fd3)) by [@welpo](https://github.com/welpo)
 - *(release)* Recommend `pipx` and link attestations ([b333c4b](https://github.com/welpo/shuku/commit/b333c4bd741e30329c91be4e66d71d04d6f8b628)) by [@welpo](https://github.com/welpo)
 
 ### ♻️ Refactor

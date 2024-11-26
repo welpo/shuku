@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shuku"
-version = "0.0.2"  # Managed by 'release' script.
+version = "0.0.3-rc.0"  # Managed by 'release' script.
 description = "A command-line tool for condensing video and audio files based on subtitle timestamps, optimizing media content for language learning and study."
 authors = ["Óscar Fernández <osc@osc.garden>"]
 license = "GPL-3.0-or-later"
