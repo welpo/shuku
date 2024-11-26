@@ -1,13 +1,6 @@
 
 ---
 
-> [!IMPORTANT]
-> The recommended install method is `pipx install shuku` or `pip install shuku`. Pre-compiled binaries take longer to boot and require manual approval:
->
-> - macOS: Right-click → Open.
-> - Windows: More info → Run anyway.
-> - Linux: `chmod +x shuku`
-
 > [!TIP]
 > ### Verifying build provenance
 >
