@@ -4,7 +4,7 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
-## [0.0.3-rc.0](https://github.com/welpo/shuku/compare/v0.0.2..v0.0.3-rc.0) - 2024-11-26
+## [0.0.3](https://github.com/welpo/shuku/compare/v0.0.2..v0.0.3) - 2024-11-26
 
 ### ✨ Features
 
@@ -12,12 +12,12 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 
 ### 📝 Documentation
 
-- Remove installation warning from release notice ([07bac0e](https://github.com/welpo/shuku/commit/07bac0e030f1fa659895ef7baad9ccf16b5423ba))
+- Remove installation warning from release notice ([07bac0e](https://github.com/welpo/shuku/commit/07bac0e030f1fa659895ef7baad9ccf16b5423ba)) by [@welpo](https://github.com/welpo)
 - Join repository metrics w/ main comparison table ([4648a9d](https://github.com/welpo/shuku/commit/4648a9daba15ad9420b14014e873a6661f130c48)) by [@welpo](https://github.com/welpo)
 
 ### ♻️ Refactor
 
-- Reduce subtitle search verbosity ([8da5423](https://github.com/welpo/shuku/commit/8da5423967d256e3aab9f0992a5d484cf30e0a03))
+- Reduce subtitle search verbosity ([8da5423](https://github.com/welpo/shuku/commit/8da5423967d256e3aab9f0992a5d484cf30e0a03)) by [@welpo](https://github.com/welpo)
 
 ### 🔧 Miscellaneous tasks
 
@@ -27,8 +27,6 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 ### 👥 New contributors
 
 🫶 [@renovate](https://github.com/renovate)[bot] made their first contribution in [#6](https://github.com/welpo/shuku/pull/6)
-
-🫶 [@welpo](https://github.com/welpo) made their first contribution
 
 ## 0.0.2 - 2024-11-22
 
