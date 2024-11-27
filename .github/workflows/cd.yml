@@ -16,6 +16,7 @@ env:
 jobs:
   check-prerelease:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       is_prerelease: ${{ steps.check_tag.outputs.is_prerelease }}
     steps:
@@ -29,6 +30,7 @@ jobs:
 
   build:
     needs: check-prerelease
+    timeout-minutes: 60
     strategy:
       matrix:
         os: [macos-14, ubuntu-24.04, windows-2022]
@@ -77,6 +79,7 @@ jobs:
 
   package:
     needs: build
+    timeout-minutes: 15
     runs-on: ubuntu-24.04
     steps:
       - name: Download all builds
@@ -130,6 +133,7 @@ jobs:
 
   create-release:
     needs: [package, check-prerelease]
+    timeout-minutes: 10
     runs-on: ubuntu-24.04
     environment:
       name: ${{ needs.check-prerelease.outputs.is_prerelease == 'true' && 'testpypi' || 'pypi' }}
