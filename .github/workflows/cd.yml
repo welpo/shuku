@@ -64,7 +64,7 @@ jobs:
         run: poetry run python -m nuitka --github-workflow-options shuku/cli.py
 
       - name: Generate build attestations
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v2
         with:
           subject-path: 'build/shuku*'
 
@@ -118,7 +118,7 @@ jobs:
           done
 
       - name: Generate package attestations
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v2
         with:
           subject-path: 'dist/*'
 
