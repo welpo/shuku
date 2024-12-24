@@ -322,13 +322,13 @@ dev = ["black", "build", "flake8", "flake8-black", "isort", "jupyter-console", "
 
 [[package]]
 name = "pysubs2"
-version = "1.7.3"
+version = "1.8.0"
 description = "A library for editing subtitle files"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "pysubs2-1.7.3-py3-none-any.whl", hash = "sha256:de438c868d2c656781c4a78f220ec3a6fd6d52be49266c81fe912d2527002d44"},
-    {file = "pysubs2-1.7.3.tar.gz", hash = "sha256:b0130f373390736754531be4e68a0fa521e825fa15cc8ff506e4f8ca2c17459a"},
+    {file = "pysubs2-1.8.0-py3-none-any.whl", hash = "sha256:05716f5039a9ebe32cd4d7673f923cf36204f3a3e99987f823ab83610b7035a0"},
+    {file = "pysubs2-1.8.0.tar.gz", hash = "sha256:3397bb58a4a15b1325ba2ae3fd4d7c214e2c0ddb9f33190d6280d783bb433b20"},
 ]
 
 [[package]]
