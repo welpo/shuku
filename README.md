@@ -37,6 +37,8 @@
 
 Designed for language learners, `shuku` creates dialogue-only versions of media (show episodes, films, or YouTube videos) using subtitles. Useful to revisit content efficiently and improve comprehension.
 
+[Read this blog post](https://osc.garden/blog/shuku-condensed-media-language-learning/) to learn more about the motivation and technical details behind shuku.
+
 https://github.com/user-attachments/assets/ae06b259-7043-423a-8895-5e8a60a32e37
 
 ## Table of contents
