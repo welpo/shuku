@@ -4,6 +4,18 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.4-rc.0](https://github.com/welpo/shuku/compare/v0.0.3..v0.0.4-rc.0) - 2024-12-27
+
+### 📝 Documentation
+
+- Add isitmaintained.com badges to comparison ([15e9b44](https://github.com/welpo/shuku/commit/15e9b445dace318d11084a8e797eda615df4dab8)) by [@welpo](https://github.com/welpo)
+
+### 🔧 Miscellaneous tasks
+
+- *(CD)* Use PyInstaller instead of Nuitka ([cf7fcbf](https://github.com/welpo/shuku/commit/cf7fcbf141765148cd1b93230333c24e36d1987b)) by [@welpo](https://github.com/welpo)
+- *(CD)* Set timeouts for release jobs ([3812d1e](https://github.com/welpo/shuku/commit/3812d1e066604438828c5922efa032601d4a5746)) by [@welpo](https://github.com/welpo)
+- *(README)* Link development blog post ([cd2f346](https://github.com/welpo/shuku/commit/cd2f3467459f54a94265f960e7760983fddf770b)) by [@welpo](https://github.com/welpo)
+
 ## [0.0.3](https://github.com/welpo/shuku/compare/v0.0.2..v0.0.3) - 2024-11-26
 
 ### ✨ Features

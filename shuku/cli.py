@@ -79,7 +79,7 @@ try:
 
     VERSION = version(PROGRAM_NAME)
 except ImportError:  # pragma: no cover
-    VERSION = "0.0.3"  # Managed by 'release' script.
+    VERSION = "0.0.4-rc.0"  # Managed by 'release' script.
 
 
 class FileProcessingError(Exception):
