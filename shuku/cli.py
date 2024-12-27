@@ -1318,5 +1318,9 @@ def pluralize(count: int, singular: str, plural: Optional[str] = None) -> str:
     return singular if count == 1 else plural
 
 
-if __name__ == "__main__":
-    main()  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
+    try:
+        main()
+    except KeyboardInterrupt as e:
+        logging.info("Operation cancelled by user.")
+        sys.exit(130)
