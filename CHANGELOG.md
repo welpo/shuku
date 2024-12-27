@@ -4,7 +4,11 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
-## [0.0.4-rc.0](https://github.com/welpo/shuku/compare/v0.0.3..v0.0.4-rc.0) - 2024-12-27
+## [0.0.4-rc.1](https://github.com/welpo/shuku/compare/v0.0.3..v0.0.4-rc.1) - 2024-12-27
+
+### ✨ Features
+
+- Handle KeyboardInterrupt gracefully ([2ad3af4](https://github.com/welpo/shuku/commit/2ad3af4a277b417d6a62cf353ed5c0db42418be6)) by [@welpo](https://github.com/welpo)
 
 ### 📝 Documentation
 
