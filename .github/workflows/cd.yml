@@ -51,28 +51,19 @@ jobs:
         run: poetry install --only main,build
 
       - name: Build executable
-        env:
-          NUITKA_WORKFLOW_INPUTS: >-
-            {
-              "standalone": true,
-              "onefile": true,
-              "assume-yes-for-downloads": true,
-              "output-dir": "build",
-              "output-file": "${{ startsWith(matrix.os, 'windows') && 'shuku.exe' || 'shuku' }}"
-            }
         shell: bash
-        run: poetry run python -m nuitka --github-workflow-options shuku/cli.py
+        run: poetry run pyinstaller --clean shuku.spec
 
       - name: Generate build attestations
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: 'build/shuku*'
+          subject-path: 'dist/shuku*'
 
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: shuku-${{ runner.os }}-build
-          path: build/shuku*
+          path: dist/shuku*
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
