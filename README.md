@@ -39,7 +39,13 @@ Designed for language learners, `shuku` creates dialogue-only versions of media 
 
 [Read this blog post](https://osc.garden/blog/shuku-condensed-media-language-learning/) to learn more about the motivation and technical details behind shuku.
 
+Running shuku:
+
 https://github.com/user-attachments/assets/ae06b259-7043-423a-8895-5e8a60a32e37
+
+What the output looks/sounds like (audio is from condensed version):
+
+https://github.com/user-attachments/assets/0bd227c0-7356-4c8f-b3d5-8fe535dde5aa
 
 ## Table of contents
 
