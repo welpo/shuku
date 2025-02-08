@@ -151,9 +151,11 @@ https://github.com/user-attachments/assets/0bd227c0-7356-4c8f-b3d5-8fe535dde5aa
 
 For Windows, here's [a good guide](https://phoenixnap.com/kb/ffmpeg-windows).
 
-2. Install shuku with [pipx](https://github.com/pypa/pipx) (recommended) or pip:
+2. Install shuku with [uv](https://docs.astral.sh/uv/), [pipx](https://github.com/pypa/pipx) or pip:
 
    ```bash
+   uv tool install shuku
+   # or
    pipx install shuku
    # or
    pip install shuku
