@@ -17,7 +17,6 @@ a = Analysis(
         '_elementtree',
         '_decimal',
         '_multiprocessing',
-        '_overlapped',
         '_queue',
         '_wmi',
         'pyexpat',
