@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import shutil
+import signal
 import sys
 import tempfile
 import time
@@ -1318,9 +1319,11 @@ def pluralize(count: int, singular: str, plural: Optional[str] = None) -> str:
     return singular if count == 1 else plural
 
 
+def sigint_handler(signum, frame):  # pragma: no cover
+    logging.info("Operation cancelled by user.")
+    os._exit(130)
+
+
 if __name__ == "__main__":  # pragma: no cover
-    try:
-        main()
-    except KeyboardInterrupt as e:
-        logging.info("Operation cancelled by user.")
-        sys.exit(130)
+    signal.signal(signal.SIGINT, sigint_handler)
+    main()
