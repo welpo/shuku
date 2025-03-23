@@ -4,6 +4,21 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.5](https://github.com/welpo/shuku/compare/v0.0.4..v0.0.5) - 2025-03-23
+
+### 🐛 Bug fixes
+
+- *(windows)* Stop excluding _overlapped module ([c493239](https://github.com/welpo/shuku/commit/c49323903c5478375b56260c858f8bcbb7505d1b)) by [@welpo](https://github.com/welpo)
+
+### 📝 Documentation
+
+- Update installation instructions to include uv ([7ba081b](https://github.com/welpo/shuku/commit/7ba081b41ae7a6869f648fd90a63cb82010d52c7)) by [@welpo](https://github.com/welpo)
+
+### 🔧 Miscellaneous tasks
+
+- *(CI)* Add concurrency control to sumi action ([94ec268](https://github.com/welpo/shuku/commit/94ec2688df674967616235d004f4dcc626bd355d)) by [@welpo](https://github.com/welpo)
+- *(README)* Add condensed vs original clip ([641c49d](https://github.com/welpo/shuku/commit/641c49dbf354e3c33bbefc18d4f02556c198df15)) by [@welpo](https://github.com/welpo)
+
 ## [0.0.4](https://github.com/welpo/shuku/compare/v0.0.3..v0.0.4) - 2024-12-27
 
 ### ✨ Features
@@ -16,19 +31,13 @@ We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATC
 
 ### ♻️ Refactor
 
-- *(help)* Ensure program name is "shuku" ([6fa632b](https://github.com/welpo/shuku/commit/6fa632bf860021ae905fc88df8bc1d09a6dcffe5))
+- *(help)* Ensure program name is "shuku" ([6fa632b](https://github.com/welpo/shuku/commit/6fa632bf860021ae905fc88df8bc1d09a6dcffe5)) by [@welpo](https://github.com/welpo)
 
 ### 🔧 Miscellaneous tasks
 
 - *(CD)* Use PyInstaller instead of Nuitka ([cf7fcbf](https://github.com/welpo/shuku/commit/cf7fcbf141765148cd1b93230333c24e36d1987b)) by [@welpo](https://github.com/welpo)
 - *(CD)* Set timeouts for release jobs ([3812d1e](https://github.com/welpo/shuku/commit/3812d1e066604438828c5922efa032601d4a5746)) by [@welpo](https://github.com/welpo)
 - *(README)* Link development blog post ([cd2f346](https://github.com/welpo/shuku/commit/cd2f3467459f54a94265f960e7760983fddf770b)) by [@welpo](https://github.com/welpo)
-
-### 👥 New contributors
-
-🫶 [@welpo](https://github.com/welpo) made their first contribution
-
-🫶 [@renovate](https://github.com/renovate)[bot] made their first contribution in [#17](https://github.com/welpo/shuku/pull/17)
 
 ## [0.0.3](https://github.com/welpo/shuku/compare/v0.0.2..v0.0.3) - 2024-11-26
 
