@@ -472,7 +472,7 @@ def create_metadata(context: Context) -> dict[str, str]:
     logging.debug("Preparing metadata…")
     input_dirname = os.path.basename(os.path.dirname(context.file_path))
     clean_name = context.clean_name
-    season, episode = extract_season_and_episode(context.basename, input_dirname)
+    season, episode = extract_season_and_episode(context.clean_name, input_dirname)
     metadata = {
         "title": clean_name,
         "artist": PROGRAM_NAME,
@@ -1288,7 +1288,7 @@ class ProgressBar:
             shutil.get_terminal_size((80, 20)).columns, self.max_width
         )
         count_display = f"{self.current}/{self.total}"
-        percentage = f"{(self.current/self.total*100):3.0f}%"
+        percentage = f"{(self.current / self.total * 100):3.0f}%"
 
         # Bar space = total - static elements (percentage, count, borders, spaces).
         bar_length = max(

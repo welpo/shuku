@@ -94,6 +94,8 @@ def get_audio_metadata(file_path: str) -> dict[str, Any]:
         "encoded_by": metadata.get("encoded_by", ""),
         "album": metadata.get("album", ""),
         "date": metadata.get("date", ""),
+        "track": metadata.get("track", ""),
+        "disc": metadata.get("disc", ""),
     }
     return result
 
@@ -124,12 +126,12 @@ def test_audio_codec_and_quality(
     result = run_shuku(input_file, str(tmp_path), str(config_file))
     assert result.returncode == 0, f"shuku failed with {audio_codec} {audio_quality}"
     output_audio = tmp_path / f"{input_filename} (condensed).{expected_extension}"
-    assert (
-        output_audio.exists()
-    ), f"Audio file was not created with {audio_codec} {audio_quality}"
-    assert (
-        output_audio.stat().st_size > 0
-    ), f"Audio file is empty with {audio_codec} {audio_quality}"
+    assert output_audio.exists(), (
+        f"Audio file was not created with {audio_codec} {audio_quality}"
+    )
+    assert output_audio.stat().st_size > 0, (
+        f"Audio file is empty with {audio_codec} {audio_quality}"
+    )
     if audio_codec == "aac":
         # ffmpeg can't write metadata to m4a files.
         return
@@ -137,9 +139,9 @@ def test_audio_codec_and_quality(
     assert metadata is not None, "Failed to get audio metadata"
     assert metadata["artist"] == "shuku", "Artist metadata is incorrect"
     assert metadata["genre"] == "Condensed Media", "Genre metadata is incorrect"
-    assert metadata["encoded_by"].startswith(
-        "shuku v"
-    ), "Encoded_by metadata is incorrect"
+    assert metadata["encoded_by"].startswith("shuku v"), (
+        "Encoded_by metadata is incorrect"
+    )
     assert metadata["date"] == str(time.gmtime().tm_year), "Date metadata is incorrect"
 
 
@@ -167,28 +169,28 @@ def test_toml_formats(tmp_path, config_file):
     expected_mp3_size = Path(expected_mp3).stat().st_size
     actual_mp3_size = output_mp3.stat().st_size
     assert actual_mp3_size > 0, f"MP3 file is empty with config {config_file}"
-    assert (
-        abs(actual_mp3_size - expected_mp3_size) / expected_mp3_size < 0.05
-    ), f"MP3 file size differs significantly with config {config_file}"
+    assert abs(actual_mp3_size - expected_mp3_size) / expected_mp3_size < 0.05, (
+        f"MP3 file size differs significantly with config {config_file}"
+    )
     expected_duration = get_file_duration(expected_mp3)
     actual_duration = get_file_duration(str(output_mp3))
-    assert (
-        abs(actual_duration - expected_duration) < 0.1
-    ), f"MP3 duration differs significantly with config {config_file}"
-    assert compute_file_hash(output_srt) == compute_file_hash(
-        expected_srt
-    ), f"SRT file content differs with config {config_file}"
+    assert abs(actual_duration - expected_duration) < 0.1, (
+        f"MP3 duration differs significantly with config {config_file}"
+    )
+    assert compute_file_hash(output_srt) == compute_file_hash(expected_srt), (
+        f"SRT file content differs with config {config_file}"
+    )
     expected_vid_size = Path(expected_vid).stat().st_size
     actual_vid_size = output_vid.stat().st_size
     assert actual_vid_size > 0, f"Video file is empty with config {config_file}"
-    assert (
-        abs(actual_vid_size - expected_vid_size) / expected_vid_size < 0.05
-    ), f"Video file size differs significantly with config {config_file}"
+    assert abs(actual_vid_size - expected_vid_size) / expected_vid_size < 0.05, (
+        f"Video file size differs significantly with config {config_file}"
+    )
     expected_vid_duration = get_file_duration(expected_vid)
     actual_vid_duration = get_file_duration(str(output_vid))
-    assert (
-        abs(actual_vid_duration - expected_vid_duration) < 0.5
-    ), f"Video duration differs significantly with config {config_file}"
+    assert abs(actual_vid_duration - expected_vid_duration) < 0.5, (
+        f"Video duration differs significantly with config {config_file}"
+    )
 
 
 def test_no_audio(tmp_path):
@@ -282,9 +284,9 @@ condensed_video = false""")
     assert "Error loading config" in result.stderr
     assert "Cannot overwrite a value" in result.stderr
     output_files = [f for f in tmp_path.glob("*") if f != invalid_config]
-    assert (
-        len(output_files) == 0
-    ), "No output files should be created with invalid config"
+    assert len(output_files) == 0, (
+        "No output files should be created with invalid config"
+    )
     assert "Successfully condensed" not in result.stderr
     assert "file failed to process" not in result.stderr
 
@@ -315,18 +317,18 @@ def test_add_internal_subs_custom_suffix(tmp_path):
         assert output_file.stat().st_size > 0, f"{output_file} is empty"
         expected_size = Path(expected_file).stat().st_size
         actual_size = output_file.stat().st_size
-        assert (
-            abs(actual_size - expected_size) / expected_size < 0.05
-        ), f"{output_file} size differs significantly from expected"
+        assert abs(actual_size - expected_size) / expected_size < 0.05, (
+            f"{output_file} size differs significantly from expected"
+        )
         if output_file != output_subs:
             expected_duration = get_file_duration(expected_file)
             actual_duration = get_file_duration(str(output_file))
-            assert (
-                abs(actual_duration - expected_duration) < 0.5
-            ), f"{output_file} duration differs significantly from expected"
-    assert compute_file_hash(output_subs) == compute_file_hash(
-        expected_subs
-    ), "Subtitle content differs from expected output"
+            assert abs(actual_duration - expected_duration) < 0.5, (
+                f"{output_file} duration differs significantly from expected"
+            )
+    assert compute_file_hash(output_subs) == compute_file_hash(expected_subs), (
+        "Subtitle content differs from expected output"
+    )
     assert "Successfully condensed" in result.stderr
     assert "file failed to process" not in result.stderr
     assert "Using only available supported subtitle stream" in result.stderr
@@ -448,21 +450,21 @@ def test_subtitle_delay_with_precise_timing(tmp_path):
     # Compare with expected output using size and duration:
     expected_size = Path(expected_audio).stat().st_size
     actual_size = output_audio_original.stat().st_size
-    assert (
-        abs(actual_size - expected_size) / expected_size < 0.05
-    ), "Audio file size differs significantly from expected"
+    assert abs(actual_size - expected_size) / expected_size < 0.05, (
+        "Audio file size differs significantly from expected"
+    )
     expected_duration = get_file_duration(expected_audio)
     actual_duration = get_file_duration(str(output_audio_original))
-    assert (
-        abs(actual_duration - expected_duration) < 0.1
-    ), "Audio duration differs significantly from expected"
+    assert abs(actual_duration - expected_duration) < 0.1, (
+        "Audio duration differs significantly from expected"
+    )
     # Compare subtitle timings.
     subs1 = pysubs2.load(str(output_subs_original))
     subs2 = pysubs2.load(str(output_subs_shifted))
     for i, (sub1, sub2) in enumerate(zip(subs1, subs2)):
-        print(f"\nBruh {i+1}:")
-        print(f"Original: {sub1.start/1000:.3f}s - {sub1.end/1000:.3f}s")
-        print(f"Shifted:  {sub2.start/1000:.3f}s - {sub2.end/1000:.3f}s")
+        print(f"\nBruh {i + 1}:")
+        print(f"Original: {sub1.start / 1000:.3f}s - {sub1.end / 1000:.3f}s")
+        print(f"Shifted:  {sub2.start / 1000:.3f}s - {sub2.end / 1000:.3f}s")
 
 
 def test_negative_subtitle_delay(tmp_path):
@@ -514,3 +516,55 @@ def test_process_file_no_segments_after_delay(tmp_path):
     output_base = tmp_path / "ディスコで超ノリノリのげんげん [ISyLeiYnPx8]_condensed"
     assert not output_base.with_suffix(".srt").exists()
     assert not output_base.with_suffix(".flac").exists()
+
+
+@pytest.mark.parametrize(
+    "filename,expected_season,expected_episode",
+    [
+        ("[Obamium]_Ichinichi_01_(1920x1080_Blu-ray_FLAC)_[9B1F3EE5].mkv", "01", "01"),
+        ("[SubsPlease] Show S01E12 (1080p) [ABC123DE].mkv", "01", "12"),
+        ("[Group] Anime - 23 [1080p] [HEVC] [FLAC].mkv", "01", "23"),
+        ("Show.S02E05.1080p.WEB-DL.AAC.x264-GROUP.mkv", "02", "05"),
+        ("[Remux] Series Ep 07 (BD 1080p FLAC) [Hash].mkv", "01", "07"),
+    ],
+)
+def test_metadata_extraction(tmp_path, filename, expected_season, expected_episode):
+    input_dir = Path("tests/test_files/input")
+    original_file = input_dir / "storm.flac"
+    subtitle_file = input_dir / "storm.srt"
+    symlink_file = input_dir / filename
+    try:
+        symlink_file.symlink_to(original_file.name)
+        config_content = """
+        clean_output_filename = false
+        [condensed_audio]
+        enabled = true
+        audio_codec = "copy"
+        [condensed_subtitles]
+        enabled = false
+        [condensed_video]
+        enabled = false
+        """
+        config_file = tmp_path / "test_config.toml"
+        config_file.write_text(config_content)
+        result = run_shuku(
+            str(symlink_file),
+            str(tmp_path),
+            str(config_file),
+            args=["--subtitles", str(subtitle_file)],
+        )
+        assert result.returncode == 0, f"shuku failed with complex filename: {filename}"
+        output_audio = tmp_path / f"{Path(filename).stem} (condensed).flac"
+        assert output_audio.exists(), f"Audio file was not created for {filename}"
+        assert output_audio.stat().st_size > 0, f"Audio file is empty for {filename}"
+        metadata = get_audio_metadata(str(output_audio))
+        assert metadata is not None, f"Failed to get audio metadata for {filename}"
+        assert metadata.get("track") == expected_episode, (
+            f"For {filename}: expected episode '{expected_episode}', got '{metadata.get('track')}'"
+        )
+        assert metadata.get("disc") == expected_season, (
+            f"For {filename}: expected season '{expected_season}', got '{metadata.get('disc')}'"
+        )
+    finally:
+        if symlink_file.exists() or symlink_file.is_symlink():
+            symlink_file.unlink()
