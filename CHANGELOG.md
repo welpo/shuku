@@ -4,6 +4,16 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.6](https://github.com/welpo/shuku/compare/v0.0.5..v0.0.6) - 2025-08-23
+
+### 🐛 Bug fixes
+
+- Correct season/episode metadata extraction ([0bb6022](https://github.com/welpo/shuku/commit/0bb602217577c43a914d22d6c008b1b42923bf39)) by [@welpo](https://github.com/welpo)
+
+### ♻️ Refactor
+
+- Improve keyboard interruption handling ([f5de092](https://github.com/welpo/shuku/commit/f5de092bac9c0e2a1c34f7f9bb430792bad9438f)) by [@welpo](https://github.com/welpo)
+
 ## [0.0.5](https://github.com/welpo/shuku/compare/v0.0.4..v0.0.5) - 2025-03-23
 
 ### 🐛 Bug fixes
