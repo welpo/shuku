@@ -55,7 +55,7 @@ jobs:
         run: poetry run pyinstaller --clean shuku.spec
 
       - name: Generate build attestations
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: 'dist/shuku*'
 
@@ -109,7 +109,7 @@ jobs:
           done
 
       - name: Generate package attestations
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: 'dist/*'
 
