@@ -60,7 +60,7 @@ jobs:
           subject-path: 'dist/shuku*'
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: shuku-${{ runner.os }}-build
           path: dist/shuku*
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Download all builds
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           path: builds
           pattern: shuku-*-build
@@ -114,7 +114,7 @@ jobs:
           subject-path: 'dist/*'
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: shuku-release-artifacts
           path: dist/*
@@ -166,7 +166,7 @@ jobs:
           packages-dir: wheels
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: shuku-release-artifacts
           path: binaries
