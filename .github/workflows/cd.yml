@@ -36,7 +36,7 @@ jobs:
         os: [macos-14, ubuntu-24.04, windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install poetry
         run: pipx install poetry
@@ -132,7 +132,7 @@ jobs:
     env:
       GIT_PAGER: cat
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Needed for git-cliff.
 
