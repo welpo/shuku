@@ -1105,7 +1105,7 @@ def test_extract_subtitles_no_supported_streams(base_context):
     ]
     with (
         patch("shuku.cli.is_supported_subtitle_format", return_value=False),
-        pytest.raises(ValueError, match="No supported subtitle streams found."),
+        pytest.raises(ValueError, match="image-based formats cannot be parsed"),
     ):
         extract_subtitles(base_context)
 
@@ -1292,7 +1292,7 @@ def test_extract_subtitles_single_unsupported_stream(
 ):
     base_context.stream_info = mock_stream_info
     mock_is_supported.return_value = False
-    with pytest.raises(ValueError, match="No supported subtitle streams found"):
+    with pytest.raises(ValueError, match="image-based formats cannot be parsed"):
         extract_subtitles(base_context)
     mock_extract_specific.assert_not_called()
     mock_display_select.assert_not_called()

@@ -653,7 +653,13 @@ def extract_subtitles(context: Context) -> str:
         for stream in unsupported_streams:
             logging.debug(f"  {format_stream_info(stream, 'subtitle')}")
     if not supported_streams:
-        raise ValueError("No supported subtitle streams found.")
+        codecs = sorted(set(s.get("codec_name", "unknown") for s in streams))
+        codec_list = ", ".join(codecs)
+        raise ValueError(
+            f"Found {len(streams)} subtitle stream(s) ({codec_list}), "
+            "but image-based formats cannot be parsed as text.\n"
+            "Use -s/--subtitles to provide an external SRT or ASS file."
+        )
     subtitle_languages = context.config.get("subtitle_languages", [])
     sorted_streams = sort_subtitle_streams(supported_streams, subtitle_languages)
     if sorted_streams != supported_streams:
