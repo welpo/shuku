@@ -173,49 +173,54 @@ def format_duration(seconds: float) -> str:
 
 @log_execution_time(log_level="info", message_template="Total execution time: {1}")
 def main() -> None:
-    args = parse_arguments()
-    setup_initial_logging(args.loglevel, args.log_file)
-    logging.debug(f"Running {PROGRAM_NAME} version {VERSION}")
-    if args.init:
-        dump_default_config()
-        sys.exit(0)
-    verify_ffmpeg_and_ffprobe_availability()
     try:
-        config = load_config(args.config)
-    except Exception as e:
-        logging.error(f"Error loading config: {e}")
-        sys.exit(1)
-    loglevel = args.loglevel or config.get("loglevel", "info")
-    update_logging_level(loglevel)
-    logging.debug(
-        "Loaded config:"
-        + "\n"
-        + "\n".join(f"  {key}: {value}" for key, value in config.items())
-    )
-    input_files = get_input_files(args.input)
-    total_files = len(input_files)
-    successful_files = 0
-    for input_file in input_files:
+        args = parse_arguments()
+        setup_initial_logging(args.loglevel, args.log_file)
+        logging.debug(f"Running {PROGRAM_NAME} version {VERSION}")
+        if args.init:
+            dump_default_config()
+            sys.exit(0)
+        verify_ffmpeg_and_ffprobe_availability()
         try:
-            process_file(input_file, config, args)
-            successful_files += 1
-        except FFmpegError as e:
-            logging.error(f"FFmpeg error processing file {input_file}: {e.message}")
-            logging.debug(f"FFmpeg command: {' '.join(e.arguments)}")
-        except FileProcessingError as e:
-            logging.error(str(e))
+            config = load_config(args.config)
         except Exception as e:
-            logging.error(f"Error processing file {input_file}: {str(e)}")
-    failed_files = total_files - successful_files
-    emoji = " ✨" if successful_files and not failed_files else ""
-    logging.info(f"Done!{emoji}")
-    if successful_files:
-        file_word = pluralize(successful_files, "file")
-        logging.success(f"Successfully condensed {successful_files} {file_word}.")  # type: ignore
-    if failed_files:
-        file_word = pluralize(failed_files, "file")
-        logging.warning(f"{failed_files} {file_word} failed to process.")
-        sys.exit(2 if successful_files == 0 else 1)
+            logging.error(f"Error loading config: {e}")
+            sys.exit(1)
+        loglevel = args.loglevel or config.get("loglevel", "info")
+        update_logging_level(loglevel)
+        logging.debug(
+            "Loaded config:"
+            + "\n"
+            + "\n".join(f"  {key}: {value}" for key, value in config.items())
+        )
+        input_files = get_input_files(args.input)
+        total_files = len(input_files)
+        successful_files = 0
+        for input_file in input_files:
+            try:
+                process_file(input_file, config, args)
+                successful_files += 1
+            except FFmpegError as e:
+                logging.error(f"FFmpeg error processing file {input_file}: {e.message}")
+                logging.debug(f"FFmpeg command: {' '.join(e.arguments)}")
+            except FileProcessingError as e:
+                logging.error(str(e))
+            except Exception as e:
+                logging.error(f"Error processing file {input_file}: {str(e)}")
+        failed_files = total_files - successful_files
+        emoji = " ✨" if successful_files and not failed_files else ""
+        logging.info(f"Done!{emoji}")
+        if successful_files:
+            file_word = pluralize(successful_files, "file")
+            logging.success(f"Successfully condensed {successful_files} {file_word}.")  # type: ignore
+        if failed_files:
+            file_word = pluralize(failed_files, "file")
+            logging.warning(f"{failed_files} {file_word} failed to process.")
+            sys.exit(2 if successful_files == 0 else 1)
+    except KeyboardInterrupt:
+        print()
+        logging.warning("Operation cancelled by user. Cleaning up…")
+        sys.exit(130)
 
 
 @log_execution_time(log_level="debug", message_template="File processed in {1}")
@@ -1325,11 +1330,5 @@ def pluralize(count: int, singular: str, plural: Optional[str] = None) -> str:
     return singular if count == 1 else plural
 
 
-def sigint_handler(signum, frame):  # pragma: no cover
-    logging.info("Operation cancelled by user.")
-    os._exit(130)
-
-
 if __name__ == "__main__":  # pragma: no cover
-    signal.signal(signal.SIGINT, sigint_handler)
     main()

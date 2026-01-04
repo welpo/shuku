@@ -39,6 +39,7 @@ from shuku.cli import (
     get_ffmpeg_video_options,
     get_input_files,
     get_skipped_chapter_intervals,
+    main,
     merge_overlapping_segments,
     prepare_filename_for_display,
     prepare_filename_for_matching,
@@ -2727,3 +2728,15 @@ def test_none_quality(base_context):
     )
     result = get_ffmpeg_video_options(base_context)
     assert result == {"c:v": "libx264", "crf": None}
+
+
+def test_keyboard_interrupt_exits_gracefully(caplog):
+    with (
+        patch("shuku.cli.parse_arguments", side_effect=KeyboardInterrupt),
+        patch("builtins.print") as mock_print,
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 130
+        assert "Operation cancelled" in caplog.text
+        mock_print.assert_called_once_with()
