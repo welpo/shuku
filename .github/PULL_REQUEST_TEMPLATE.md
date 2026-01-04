@@ -47,7 +47,7 @@
 ### Checklist
 
 - [ ] I have read the [**contributing guidelines**](https://github.com/welpo/shuku/blob/main/CONTRIBUTING.md).
-- [ ] I have formatted the code with [Black](https://github.com/psf/black).
+- [ ] I have formatted the code with [Ruff](https://docs.astral.sh/ruff/).
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
 - [ ] I have added tests to cover my changes.

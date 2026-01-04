@@ -89,7 +89,7 @@ Our integration systems run automated tests to guard against mistakes. To speed 
 
 - Make sure all new and existing tests pass with `poetry run pytest`.
 - Run `poetry run mypy shuku` to check for type errors.
-- Run `poetry run black {file/dir}` to format your code.
+- Run `poetry run ruff {file/dir}` to format your code.
 - If necessary, update the documentation (i.e. `README.md`).
 
 You might find the [hooks in `.githooks/`](https://github.com/welpo/doteki/tree/main/.githooks) useful. Read more on the [pre-commit githook section](#pre-commit-githook).
@@ -132,7 +132,7 @@ Example:
 
 ## Coding guidelines
 
-- Use [`black`](https://github.com/psf/black) to format your code before submitting a pull request.
+- Use [`Ruff`](https://docs.astral.sh/ruff/) to format your code before submitting a pull request.
 - Functions should be type annotated. Use `mypy` to check for type errors.
 - Keep the code clean and maintainable. Here are some guidelines:
 
