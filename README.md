@@ -77,6 +77,7 @@ https://github.com/user-attachments/assets/0bd227c0-7356-4c8f-b3d5-8fe535dde5aa
 - Skip unwanted subtitle lines (e.g., lyrics or sound effects)
 - Skip chapters (e.g., openings, previews, credits)
 - Smart metadata extraction (season, episode, title)
+- Embed cover art in condensed audio (auto-generated or custom)
 - Logging and progress tracking
 - Generate LRC files from subtitles to use with music players
 - Batch processing of multiple files and directories
@@ -121,6 +122,7 @@ https://github.com/user-attachments/assets/0bd227c0-7356-4c8f-b3d5-8fe535dde5aa
 | Episode number | ✅ | ✅ | ❌ |
 | Season number | ✅ | ❌ | ❌ |
 | Clean media title | ✅ | ❌ | ❌ |
+| [Embedded cover art](#cover_art) | ✅ | ❌ | ❌ |
 | **Repository metrics** |
 | Resolution time | [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/welpo/shuku.svg)](http://isitmaintained.com/project/welpo/shuku) | [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/Ajatt-Tools/impd.svg)](http://isitmaintained.com/project/Ajatt-Tools/impd) | [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ercanserteli/condenser.svg)](http://isitmaintained.com/project/ercanserteli/condenser) |
 | Open issues | [![Percentage of issues still open](http://isitmaintained.com/badge/open/welpo/shuku.svg)](http://isitmaintained.com/project/welpo/shuku) | [![Percentage of issues still open](http://isitmaintained.com/badge/open/Ajatt-Tools/impd.svg)](http://isitmaintained.com/project/Ajatt-Tools/impd) | [![Percentage of issues still open](http://isitmaintained.com/badge/open/ercanserteli/condenser.svg)](http://isitmaintained.com/project/ercanserteli/condenser) |
@@ -330,6 +332,24 @@ custom_ffmpeg_args = {
 }
 ```
 
+#### `cover_art`
+
+Controls cover art embedding in condensed audio files. Can be:
+
+- `'auto'`: Automatically extract a frame from the video (default)
+- `'disabled'`: Skip cover art embedding
+- A path to an image file (e.g. `'~/covers/show.jpg'`)
+
+When set to `'auto'`, shuku first looks for existing artwork:
+
+1. Exact match: `{input_filename}.jpg` or `{input_filename}-thumb.jpg`
+2. Folder artwork: `cover.jpg`, `folder.jpg`, `poster.jpg`, `album.jpg`
+3. If none found, extracts a frame at 25% of the video duration
+
+**Note**: Cover art embedding is supported for MP3, AAC, and FLAC formats.
+
+Default: `'auto'`
+
 ### Condensed video options
 
 #### `enabled`
@@ -525,6 +545,10 @@ ID of the subtitle track to use.
 ### `--sub-delay <ms>`
 
 Delay subtitles by `<ms>` milliseconds. Can be negative.
+
+### `--cover <path>`
+
+Path to an image file to embed as cover art. Use `'auto'` to extract from video (default behaviour), or `'disabled'` to skip cover art embedding.
 
 ### `-v {level}, --loglevel {level}`
 

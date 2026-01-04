@@ -180,6 +180,11 @@ CONFIG_OPTIONS = {
         },
         validators=[lambda x: isinstance(x, dict) if x else True],
     ),
+    "condensed_audio.cover_art": ConfigItem(
+        description="Cover art mode: 'auto' extracts a frame from video, 'disabled' skips cover art, or provide a path to an image file.",
+        default_value="auto",
+        validators=[lambda x: isinstance(x, str)],
+    ),
     # Condensed video settings.
     "condensed_video.enabled": ConfigItem(
         description="Create condensed video.",
