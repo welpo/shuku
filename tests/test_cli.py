@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pysubs2
 import pytest
-from ffmpeg import FFmpeg
+from ffmpeg import FFmpeg, FFmpegError
 
 from shuku.cli import (
     DEFAULT_MP3_VBR_QUALITY,
@@ -24,6 +24,7 @@ from shuku.cli import (
     create_concat_file,
     create_condensed_subtitles,
     display_and_select_stream,
+    encode_final_audio,
     extract_season_and_episode,
     extract_specific_subtitle,
     extract_speech_timing_from_subtitles,
@@ -32,6 +33,7 @@ from shuku.cli import (
     filter_skip_patterns_in_place,
     find_matching_subtitle_file,
     find_subtitles,
+    generate_cover_from_video,
     generate_output_path,
     get_all_stream_info,
     get_audio_extension,
@@ -44,6 +46,7 @@ from shuku.cli import (
     prepare_filename_for_display,
     prepare_filename_for_matching,
     process_file,
+    resolve_cover_image,
     safe_move,
     select_audio_stream,
     sort_subtitle_streams,
@@ -67,6 +70,7 @@ def base_context(tmp_path):
             sub_track_id=None,
             audio_track_id=None,
             subtitles=None,
+            cover=None,
         ),
         temp_dir=str(tmp_path),
         metadata={},
@@ -83,6 +87,7 @@ def base_context(tmp_path):
         input_name=input_name,
         basename=input_name,
         clean_name=input_name,
+        cover_image_path=None,
     )
 
 
@@ -1197,9 +1202,9 @@ def test_create_condensed_subtitles_positive_delay(tmp_path, sample_subs, base_c
     assert len(output_subs) == 2, "Expected 2 subtitle events"
     assert output_subs[0].start == 0, "First subtitle should start at beginning"
     assert output_subs[0].end == 1000, "First subtitle should be 1s long"
-    assert (
-        output_subs[1].start == 1000
-    ), "Second subtitle should start right after first"
+    assert output_subs[1].start == 1000, (
+        "Second subtitle should start right after first"
+    )
     assert output_subs[1].end == 2000, "Second subtitle should be 1s long"
     assert output_subs[0].text == "First subtitle"
     assert output_subs[1].text == "Second subtitle"
@@ -1230,9 +1235,9 @@ Later line""")
         (0.0, 0.5),  # First two segments merged.
         (2.0, 3.0),  # Third segment fully positive after shift.
     ]
-    assert (
-        segments == expected_segments
-    ), "Segments weren't correctly handled when delay caused negative times"
+    assert segments == expected_segments, (
+        "Segments weren't correctly handled when delay caused negative times"
+    )
 
 
 @pytest.fixture
@@ -1260,9 +1265,9 @@ def test_create_condensed_subtitles_negative_delay(tmp_path, sample_subs, base_c
     assert len(output_subs) == 2, "Expected 2 subtitle events"
     assert output_subs[0].start == 0, "First subtitle should start at beginning"
     assert output_subs[0].end == 1000, "First subtitle should be 1s long"
-    assert (
-        output_subs[1].start == 1000
-    ), "Second subtitle should start right after first"
+    assert output_subs[1].start == 1000, (
+        "Second subtitle should start right after first"
+    )
     assert output_subs[1].end == 2000, "Second subtitle should be 1s long"
     assert output_subs[0].text == "First subtitle"
     assert output_subs[1].text == "Second subtitle"
@@ -2740,3 +2745,148 @@ def test_keyboard_interrupt_exits_gracefully(caplog):
         assert exc_info.value.code == 130
         assert "Operation cancelled" in caplog.text
         mock_print.assert_called_once_with()
+
+
+def test_resolve_cover_image_explicit_path_not_found_returns_none(base_context):
+    base_context.args.cover = "/nonexistent/cover.jpg"
+    result = resolve_cover_image(base_context)
+    assert result is None
+
+
+def test_resolve_cover_image_config_path_not_found_falls_through_to_discovery(
+    base_context, tmp_path
+):
+    base_context.args.cover = None
+    base_context.config["condensed_audio.cover_art"] = "/nonexistent/cover.jpg"
+    base_context.file_path = str(tmp_path / "input.mkv")
+    (tmp_path / "cover.jpg").touch()
+    result = resolve_cover_image(base_context)
+    assert result == str(tmp_path / "cover.jpg")
+
+
+def test_resolve_cover_image_finds_exact_match_before_generic(base_context, tmp_path):
+    (tmp_path / "input.jpg").touch()
+    (tmp_path / "cover.jpg").touch()
+    base_context.file_path = str(tmp_path / "input.mkv")
+    result = resolve_cover_image(base_context)
+    assert result == str(tmp_path / "input.jpg")
+
+
+def test_generate_cover_from_video_returns_none_when_no_video_streams(base_context):
+    base_context.stream_info = {"video": [], "format": {}}
+    result = generate_cover_from_video(base_context)
+    assert result is None
+
+
+def test_generate_cover_from_video_returns_none_on_ffmpeg_error(base_context):
+    base_context.stream_info = {
+        "video": [{"color_transfer": "bt709", "duration": "100"}],
+        "format": {"duration": "100"},
+    }
+    with patch("shuku.cli.FFmpeg") as mock_ffmpeg_class:
+        mock_ffmpeg = MagicMock()
+        mock_ffmpeg_class.return_value = mock_ffmpeg
+        mock_ffmpeg.option.return_value = mock_ffmpeg
+        mock_ffmpeg.input.return_value = mock_ffmpeg
+        mock_ffmpeg.output.return_value = mock_ffmpeg
+        mock_ffmpeg.execute.side_effect = FFmpegError("ffmpeg", ["error"])
+        result = generate_cover_from_video(base_context)
+        assert result is None
+
+
+def test_generate_cover_from_video_hdr_triggers_tonemapping_filter(
+    base_context, tmp_path
+):
+    base_context.stream_info = {
+        "video": [{"color_transfer": "smpte2084", "duration": "100"}],
+        "format": {"duration": "100"},
+    }
+    with patch("shuku.cli.FFmpeg") as mock_ffmpeg_class:
+        mock_ffmpeg = MagicMock()
+        mock_ffmpeg_class.return_value = mock_ffmpeg
+        mock_ffmpeg.option.return_value = mock_ffmpeg
+        mock_ffmpeg.input.return_value = mock_ffmpeg
+        mock_ffmpeg.output.return_value = mock_ffmpeg
+        output_path = tmp_path / "cover_generated.jpg"
+        output_path.touch()
+        result = generate_cover_from_video(base_context)
+        assert result == str(output_path)
+        output_call = mock_ffmpeg.output.call_args
+        assert "zscale" in output_call[0][1]["vf"]
+
+
+def test_generate_cover_from_video_calculates_duration_when_format_is_not_dict(
+    base_context, tmp_path
+):
+    base_context.stream_info = {
+        "video": [{"color_transfer": "bt709", "duration": "200"}],
+        "format": None,
+    }
+    with patch("shuku.cli.FFmpeg") as mock_ffmpeg_class:
+        mock_ffmpeg = MagicMock()
+        mock_ffmpeg_class.return_value = mock_ffmpeg
+        mock_ffmpeg.option.return_value = mock_ffmpeg
+        mock_ffmpeg.input.return_value = mock_ffmpeg
+        mock_ffmpeg.output.return_value = mock_ffmpeg
+        output_path = tmp_path / "cover_generated.jpg"
+        output_path.touch()
+        result = generate_cover_from_video(base_context)
+        assert result == str(output_path)
+        option_calls = [c for c in mock_ffmpeg.option.call_args_list]
+        ss_call = [c for c in option_calls if c[0][0] == "ss"]
+        assert len(ss_call) == 1
+        assert ss_call[0][0][1] == "50.0"
+
+
+def test_generate_cover_from_video_falls_back_to_video_stream_duration(
+    base_context, tmp_path
+):
+    base_context.stream_info = {
+        "video": [{"color_transfer": "bt709", "duration": "120"}],
+        "format": {"duration": "0"},
+    }
+    with patch("shuku.cli.FFmpeg") as mock_ffmpeg_class:
+        mock_ffmpeg = MagicMock()
+        mock_ffmpeg_class.return_value = mock_ffmpeg
+        mock_ffmpeg.option.return_value = mock_ffmpeg
+        mock_ffmpeg.input.return_value = mock_ffmpeg
+        mock_ffmpeg.output.return_value = mock_ffmpeg
+        output_path = tmp_path / "cover_generated.jpg"
+        output_path.touch()
+        result = generate_cover_from_video(base_context)
+        assert result == str(output_path)
+        option_calls = [c for c in mock_ffmpeg.option.call_args_list]
+        ss_call = [c for c in option_calls if c[0][0] == "ss"]
+        assert len(ss_call) == 1
+        assert ss_call[0][0][1] == "30.0"
+
+
+def test_resolve_cover_image_explicit_path_via_config(base_context, tmp_path):
+    cover_file = tmp_path / "custom_cover.jpg"
+    cover_file.touch()
+    base_context.args.cover = None
+    base_context.config["condensed_audio.cover_art"] = str(cover_file)
+    result = resolve_cover_image(base_context)
+    assert result == str(cover_file)
+
+
+def test_encode_final_audio_mp3_with_cover_adds_id3v2_version(base_context, tmp_path):
+    base_context.config["condensed_audio.audio_codec"] = "libmp3lame"
+    base_context.config["condensed_audio.audio_quality"] = "V5"
+    cover_file = tmp_path / "cover.jpg"
+    cover_file.touch()
+    base_context.cover_image_path = str(cover_file)
+    concat_file = tmp_path / "concat.txt"
+    concat_file.write_text("file 'segment.mkv'\n")
+    output_path = tmp_path / "output.mp3"
+    with patch("shuku.cli.FFmpeg") as mock_ffmpeg_class:
+        mock_ffmpeg = MagicMock()
+        mock_ffmpeg_class.return_value = mock_ffmpeg
+        mock_ffmpeg.option.return_value = mock_ffmpeg
+        mock_ffmpeg.input.return_value = mock_ffmpeg
+        mock_ffmpeg.output.return_value = mock_ffmpeg
+        encode_final_audio(base_context, str(concat_file), str(output_path))
+        output_call = mock_ffmpeg.output.call_args
+        assert output_call[1]["id3v2_version"] == "3"
+        assert output_call[1]["c:v"] == "mjpeg"
+        assert output_call[1]["disposition:v"] == "attached_pic"

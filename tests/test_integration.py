@@ -568,3 +568,157 @@ def test_metadata_extraction(tmp_path, filename, expected_season, expected_episo
     finally:
         if symlink_file.exists() or symlink_file.is_symlink():
             symlink_file.unlink()
+
+
+def get_cover_art_info(file_path: str) -> dict[str, Any] | None:
+    """
+    Returns the stream information for the attached picture (cover art), or None if no cover art is found.
+    """
+    try:
+        probe = (
+            FFmpeg(executable="ffprobe")
+            .option("v", "quiet")
+            .option("print_format", "json")
+            .option("show_streams")
+            .option("select_streams", "v")  # Cover art is treated as a video stream.
+            .input(file_path)
+            .execute()
+        )
+        data = json.loads(probe)
+        streams: list[dict[str, Any]] = data.get("streams", [])
+        for stream in streams:
+            disposition = stream.get("disposition", {})
+            if disposition.get("attached_pic") == 1:
+                return stream
+        return None
+    except Exception:
+        return None
+
+
+def test_cover_art_explicit_cli(tmp_path):
+    input_file = (
+        "tests/test_files/input/ディスコで超ノリノリのげんげん [ISyLeiYnPx8].mp4"
+    )
+    cover_image = "tests/test_files/input/cover.jpg"
+    config_content = """
+    clean_output_filename = false
+    [condensed_audio]
+    enabled = true
+    audio_codec = "aac"
+    """
+    config_file = tmp_path / "config.toml"
+    config_file.write_text(config_content)
+    result = run_shuku(
+        input_file, str(tmp_path), str(config_file), args=["--cover", cover_image]
+    )
+    assert result.returncode == 0
+    output_file = (
+        tmp_path / "ディスコで超ノリノリのげんげん [ISyLeiYnPx8] (condensed).m4a"
+    )
+    assert output_file.exists(), (
+        f"Output file not found. Files in dir: {list(tmp_path.iterdir())}"
+    )
+    cover_info = get_cover_art_info(str(output_file))
+    assert cover_info is not None, "Cover art stream not found in output file"
+    assert cover_info["codec_name"] == "mjpeg"
+
+
+def test_cover_art_folder_discovery(tmp_path):
+    work_dir = tmp_path / "test_folder"
+    work_dir.mkdir()
+    src_video = Path(
+        "tests/test_files/input/祝成人！新成人インタビュー [ufQzl-dyA4s].mkv"
+    ).resolve()
+    src_cover = Path("tests/test_files/input/cover.jpg").resolve()
+    target_video = work_dir / src_video.name
+    target_video.symlink_to(src_video)
+    (work_dir / "cover.jpg").symlink_to(src_cover)
+    config_content = """
+    clean_output_filename = false
+    [condensed_audio]
+    enabled = true
+    audio_codec = "aac"
+    """
+    config_file = work_dir / "shuku.toml"
+    config_file.write_text(config_content)
+    result = run_shuku(str(target_video), str(work_dir), str(config_file))
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    output_file = work_dir / f"{src_video.stem} (condensed).m4a"
+    assert output_file.exists(), (
+        f"Output file not found. Files in dir: {list(work_dir.iterdir())}"
+    )
+    cover_info = get_cover_art_info(str(output_file))
+    assert cover_info is not None, "Failed to discover and embed folder cover.jpg"
+
+
+def test_cover_art_auto_generation(tmp_path):
+    work_dir = tmp_path / "isolation"
+    work_dir.mkdir()
+    src_video = Path(
+        "tests/test_files/input/ディスコで超ノリノリのげんげん [ISyLeiYnPx8].mp4"
+    ).resolve()
+    (work_dir / src_video.name).symlink_to(src_video)
+    (work_dir / src_video.with_suffix(".vtt").name).symlink_to(
+        src_video.with_suffix(".vtt")
+    )
+    config_content = """
+    clean_output_filename = false
+    [condensed_audio]
+    enabled = true
+    audio_codec = "aac"
+    cover_art = "auto"
+    """
+    config_file = work_dir / "config.toml"
+    config_file.write_text(config_content)
+    result = run_shuku(str(work_dir / src_video.name), str(work_dir), str(config_file))
+    assert result.returncode == 0
+    output_file = work_dir / f"{src_video.stem} (condensed).m4a"
+    assert output_file.exists()
+    assert get_cover_art_info(str(output_file)) is not None
+
+
+def test_cover_art_disabled(tmp_path):
+    input_file = (
+        "tests/test_files/input/ディスコで超ノリノリのげんげん [ISyLeiYnPx8].mp4"
+    )
+    config_content = """
+    clean_output_filename = false
+    [condensed_audio]
+    enabled = true
+    audio_codec = "aac"
+    """
+    config_file = tmp_path / "config.toml"
+    config_file.write_text(config_content)
+    result = run_shuku(
+        input_file, str(tmp_path), str(config_file), args=["--cover", "disabled"]
+    )
+    assert result.returncode == 0
+    output_file = (
+        tmp_path / "ディスコで超ノリノリのげんげん [ISyLeiYnPx8] (condensed).m4a"
+    )
+    assert output_file.exists()
+    cover_info = get_cover_art_info(str(output_file))
+    assert cover_info is None, "Cover art found despite being disabled"
+
+
+def test_cover_art_disabled_via_config(tmp_path):
+    input_file = (
+        "tests/test_files/input/ディスコで超ノリノリのげんげん [ISyLeiYnPx8].mp4"
+    )
+    config_content = """
+    clean_output_filename = false
+    [condensed_audio]
+    enabled = true
+    audio_codec = "aac"
+    cover_art = "disabled"
+    """
+    config_file = tmp_path / "config.toml"
+    config_file.write_text(config_content)
+    result = run_shuku(input_file, str(tmp_path), str(config_file))
+    assert result.returncode == 0
+    output_file = (
+        tmp_path / "ディスコで超ノリノリのげんげん [ISyLeiYnPx8] (condensed).m4a"
+    )
+    assert output_file.exists()
+    cover_info = get_cover_art_info(str(output_file))
+    assert cover_info is None, "Cover art embedded despite config disable"

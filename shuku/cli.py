@@ -51,6 +51,9 @@ if INCLUDE_DEMO_UTILS:
 
 DEFAULT_MP3_VBR_QUALITY = "6"
 SUPPORTED_SUBTITLE_FORMATS = frozenset(sorted(FORMAT_IDENTIFIER_TO_FORMAT_CLASS.keys()))
+COVER_ART_DIMENSIONS_PIXELS = 500
+COVER_ART_PERCENTAGE_TO_GET_FRAME = 25
+COVER_ART_UNSUPPORTED_CODECS = {"pcm_s16le", "copy", "libopus"}
 PENALIZED_SUBTITLE_KEYWORDS = [
     "sign",
     "song",
@@ -105,6 +108,7 @@ class Context:
     )
     selected_audio_stream: Optional[str] = None
     original_subtitle_format: Optional[str] = None
+    cover_image_path: Optional[str] = None
 
     @classmethod
     def create(
@@ -219,7 +223,7 @@ def main() -> None:
             sys.exit(2 if successful_files == 0 else 1)
     except KeyboardInterrupt:
         print()
-        logging.warning("Operation cancelled by user. Cleaning up…")
+        logging.warning("Operation cancelled by user.")
         sys.exit(130)
 
 
@@ -236,6 +240,8 @@ def process_file(
         if config["condensed_audio.enabled"] or config["condensed_video.enabled"]:
             context.selected_audio_stream = select_audio_stream(context)
             context.metadata = create_metadata(context)
+        if config["condensed_audio.enabled"]:
+            context.cover_image_path = resolve_cover_image(context)
         # Raises an error if no subtitles found.
         subtitle_path = find_subtitles(context)
         if context.config["condensed_subtitles.enabled"]:
@@ -336,6 +342,11 @@ def parse_arguments() -> argparse.Namespace:
         help="Delay subtitles by <ms> milliseconds. Can be negative.",
     )
     parser.add_argument(
+        "--cover",
+        metavar="<path>",
+        help="Path to cover image, 'auto' (default), or 'disabled'.",
+    )
+    parser.add_argument(
         "--init",
         action="store_true",
         help="Create a default configuration file in the user config directory.",
@@ -375,7 +386,13 @@ def get_all_stream_info(file_path: str) -> dict[str, Any]:
     logging.debug("Getting stream info with ffprobe…")
     info = (
         FFmpeg(executable="ffprobe")
-        .input(file_path, show_streams=None, show_chapters=None, of="json")
+        .input(
+            file_path,
+            show_streams=None,
+            show_chapters=None,
+            show_format=None,
+            of="json",
+        )
         .execute()
     )
     parsed = json.loads(info)
@@ -387,6 +404,7 @@ def get_all_stream_info(file_path: str) -> dict[str, Any]:
         "audio": [s for s in streams if s["codec_type"] == "audio"],
         "subtitle": [s for s in streams if s["codec_type"] == "subtitle"],
         "chapters": parsed.get("chapters", []),
+        "format": parsed.get("format", {}),
     }
 
 
@@ -494,6 +512,109 @@ def create_metadata(context: Context) -> dict[str, str]:
         f"metadata:g:{i}": f"{k}={v}" for i, (k, v) in enumerate(metadata.items())
     }
     return indexed_metadata
+
+
+def resolve_cover_image(context: Context) -> Optional[str]:
+    """
+    Determines the cover image path based on config/args.
+    Returns None if cover art is disabled or unavailable.
+    Returns path to image file.
+    """
+    # CLI override takes precedence.
+    cover_arg: Optional[str] = getattr(context.args, "cover", None)
+    if cover_arg:
+        if cover_arg == "disabled":
+            logging.debug("Cover art disabled via --cover")
+            return None
+        if cover_arg != "auto":
+            # Explicit path provided.
+            if Path(cover_arg).is_file():
+                logging.info(f"Using cover art: {cover_arg}")
+                return str(cover_arg)
+            logging.warning(f"Cover art not found: {cover_arg}")
+            return None
+    # Config value.
+    cover_config: str = context.config.get("condensed_audio.cover_art", "auto")
+    if cover_config == "disabled":
+        logging.debug("Cover art disabled via config")
+        return None
+    if cover_config != "auto":
+        # Explicit path in config.
+        expanded_path: str = os.path.expanduser(cover_config)
+        if Path(expanded_path).is_file():
+            logging.info(f"Using cover art: {expanded_path}")
+            return str(expanded_path)
+        logging.warning(f"Cover art not found: {cover_config}")
+    # Folder discovery (exact match first, then generic).
+    input_dir = Path(context.file_path).parent
+    input_stem = Path(context.file_path).stem
+    # Exact match (episode-specific artwork).
+    exact_names = [
+        f"{input_stem}.jpg",
+        f"{input_stem}.png",
+    ]
+    for name in exact_names:
+        path = input_dir / name
+        if path.is_file():
+            logging.info(f"Found episode cover art: {path}")
+            return str(path)
+    # Generic covers (folder-level artwork).
+    generic_names = ["cover.jpg", "cover.png", "folder.jpg", "poster.jpg", "album.jpg"]
+    for name in generic_names:
+        path = input_dir / name
+        if path.is_file():
+            logging.info(f"Found folder cover art: {path}")
+            return str(path)
+    # Auto-generation from video.
+    return generate_cover_from_video(context)
+
+
+def generate_cover_from_video(context: Context) -> Optional[str]:
+    """Extract a frame from the video as cover art."""
+    video_streams = context.stream_info.get("video", [])
+    if not video_streams:
+        logging.debug("No video stream for cover art generation")
+        return None
+    # Calculate timestamp.
+    format_info = context.stream_info.get("format")
+    if isinstance(format_info, dict):
+        duration = float(format_info.get("duration", 0) or 0)
+    else:
+        duration = 0.0
+    if duration <= 0:
+        # Get duration from video stream.
+        video = video_streams[0]
+        duration = float(video.get("duration", 0) or 0)
+    timestamp = (
+        duration * (COVER_ART_PERCENTAGE_TO_GET_FRAME / 100) if duration > 0 else 60.0
+    )
+    output_image = os.path.join(context.temp_dir, "cover_generated.jpg")
+    size = COVER_ART_DIMENSIONS_PIXELS
+    if is_hdr_video(context.stream_info):
+        logging.debug("HDR video detected, applying tonemapping")
+        vf = (
+            f"zscale=t=linear:npl=100,format=gbrpf32le,"
+            f"zscale=p=bt709,tonemap=hable:desat=0,"
+            f"zscale=t=bt709:m=bt709:r=tv,format=yuv420p,"
+            f"scale={size}:{size}:force_original_aspect_ratio=increase,crop={size}:{size}"
+        )
+    else:
+        vf = f"scale={size}:{size}:force_original_aspect_ratio=increase,crop={size}:{size}"
+    try:
+        ffmpeg = (
+            FFmpeg()
+            .option("y")
+            .option("ss", str(timestamp))
+            .input(context.file_path)
+            .output(output_image, {"vframes": 1, "vf": vf, "q:v": 5})
+        )
+        ffmpeg.execute()
+        if os.path.exists(output_image):
+            logging.info("Generated cover art from video")
+            return output_image
+    except FFmpegError as e:
+        logging.warning(f"Failed to generate cover art: {e.message}")
+    return None
 
 
 def find_subtitles(context: Context) -> str:
@@ -968,17 +1089,19 @@ def encode_final_audio(context: Context, concat_file: str, output_path: str) -> 
     ffmpeg_audio_options = get_ffmpeg_audio_options(context, media_type="audio")
     custom_args = context.config.get("condensed_audio.custom_ffmpeg_args") or {}
     ffmpeg_options = ffmpeg_audio_options | custom_args | context.metadata
+    audio_codec = context.config["condensed_audio.audio_codec"]
+    ffmpeg = FFmpeg().option("y").input(concat_file, f="concat", safe=0)
+    maps = ["0:a"]
+    if context.cover_image_path and audio_codec not in COVER_ART_UNSUPPORTED_CODECS:
+        ffmpeg = ffmpeg.input(context.cover_image_path)
+        maps.append("1:v")
+        ffmpeg_options["c:v"] = "mjpeg"
+        ffmpeg_options["disposition:v"] = "attached_pic"
+        if audio_codec == "libmp3lame":
+            ffmpeg_options["id3v2_version"] = "3"
+        logging.debug("Embedding cover art in audio file")
     logging.debug(f"ffmpeg options: {ffmpeg_options}")
-    ffmpeg = (
-        FFmpeg()
-        .option("y")
-        .input(concat_file, f="concat", safe=0)
-        .output(
-            url=output_path,
-            map="0:a",
-            **ffmpeg_options,
-        )
-    )
+    ffmpeg = ffmpeg.output(url=output_path, map=maps, **ffmpeg_options)
     logging.info("Creating condensed audio…")
     ffmpeg.execute()
 
@@ -1026,6 +1149,14 @@ def get_ffmpeg_audio_options(
     else:
         options["b:a"] = audio_quality
     return options
+
+
+def is_hdr_video(stream_info: dict[str, Any]) -> bool:
+    """Check if video has HDR color space. Caller must ensure video streams exist."""
+    video = stream_info["video"][0]
+    color_transfer = video.get("color_transfer", "")
+    # HDR indicators: smpte2084 (PQ/HDR10), arib-std-b67 (HLG).
+    return color_transfer in ("smpte2084", "arib-std-b67")
 
 
 def prepare_filename_for_display(filename: str) -> str:
