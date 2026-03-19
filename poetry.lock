@@ -437,13 +437,13 @@ setuptools = ">=42.0.0"
 
 [[package]]
 name = "pysubs2"
-version = "1.8.0"
+version = "1.8.1"
 description = "A library for editing subtitle files"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pysubs2-1.8.0-py3-none-any.whl", hash = "sha256:05716f5039a9ebe32cd4d7673f923cf36204f3a3e99987f823ab83610b7035a0"},
-    {file = "pysubs2-1.8.0.tar.gz", hash = "sha256:3397bb58a4a15b1325ba2ae3fd4d7c214e2c0ddb9f33190d6280d783bb433b20"},
+    {file = "pysubs2-1.8.1-py3-none-any.whl", hash = "sha256:eb5d8872b7f87208070dd6f0d85fc110b7ad6cc2a7ec422f5b12363e9194e4e4"},
+    {file = "pysubs2-1.8.1.tar.gz", hash = "sha256:af3a288643da87db6bb13dbde70e94c9570765cc8f6423b1c21de11f16d734da"},
 ]
 
 [[package]]
