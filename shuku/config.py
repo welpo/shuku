@@ -150,7 +150,6 @@ CONFIG_OPTIONS = {
             "^\\([^)]*\\)$",  # Parentheses ()
             "^（[^）]*）$",  # Full-width parentheses （）
             "^\\[.*\\]$",  # Square brackets []
-            "^\\{[^\\}]*\\}$",  # Curly braces {}
             "^<[^>]*>$",  # Angle brackets <>
         ],
         validators=[lambda x: all(isinstance(pattern, str) for pattern in x)],
@@ -439,6 +438,37 @@ def generate_config_content() -> str:
     return config_content.rstrip() + "\n"
 
 
+def toml_value(value: object) -> str:
+    """
+    Serialise a Python value as TOML.
+
+    Strings become TOML literal strings, which process no escape sequences. Do
+    not reach for repr(): its single-quoted output looks identical but is Python
+    syntax, where backslashes *are* escapes, so every regex backslash would be
+    doubled on the way out.
+
+    Literal strings cannot contain an apostrophe or a newline; such values are
+    rejected rather than escaped, since no value in CONFIG_OPTIONS needs them.
+    """
+    if isinstance(value, str):
+        if "'" in value or "\n" in value:
+            raise ValueError(
+                f"TOML literal string cannot contain ' or a newline: {value!r}"
+            )
+        return f"'{value}'"
+    # Must precede the int check: bool is a subclass of int.
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, list):
+        return "[" + ", ".join(toml_value(item) for item in value) + "]"
+    if isinstance(value, dict):
+        pairs = (f"{toml_value(k)} = {toml_value(v)}" for k, v in value.items())
+        return "{ " + ", ".join(pairs) + " }"
+    if isinstance(value, (int, float)):
+        return str(value)
+    raise TypeError(f"Unsupported TOML value: {value!r}")
+
+
 def generate_item_content(key: str, item: ConfigItem) -> str:
     choices = list(map(str, item.choices or []))
     aliases = [
@@ -447,31 +477,17 @@ def generate_item_content(key: str, item: ConfigItem) -> str:
     choice_str = (
         f"# Choices: {', '.join(choices + aliases)}\n" if choices or aliases else ""
     )
-
-    def format_dict_with_equals(d: dict) -> str:
-        return "{ " + ", ".join(f'"{k}" = {repr(v)}' for k, v in d.items()) + " }"
-
-    example_value = (
-        (
-            format_dict_with_equals(item.example_value)
-            if isinstance(item.example_value, dict)
-            else repr(item.example_value)
+    if item.default_value is None:
+        # Show an example instead, commented out. It has to stay on one line:
+        # the '# ' prefix would only comment out the first one.
+        example = (
+            toml_value(item.example_value) if item.example_value is not None else "null"
         )
-        if getattr(item, "example_value", None)
-        else "null"
-    )
-    if key == "line_skip_patterns":
-        default_value_str = f"{key} = [\n"
-        default_value_str += "".join(
-            f"    {repr(pattern)},\n" for pattern in item.default_value
-        )
-        default_value_str += "]\n"
-    elif item.default_value is None:
-        default_value_str = f"# {key} = {example_value}\n"
-    elif isinstance(item.default_value, bool):
-        default_value_str = f"{key} = {str(item.default_value).lower()}\n"
-    elif isinstance(item.default_value, dict):
-        default_value_str = f"{key} = {format_dict_with_equals(item.default_value)}\n"
+        default_value_str = f"# {key} = {example}\n"
+    elif isinstance(item.default_value, list):
+        # One entry per line, so the list stays readable to edit by hand.
+        entries = "".join(f"    {toml_value(v)},\n" for v in item.default_value)
+        default_value_str = f"{key} = [\n{entries}]\n"
     else:
-        default_value_str = f"{key} = {repr(item.default_value)}\n"
+        default_value_str = f"{key} = {toml_value(item.default_value)}\n"
     return f"# {item.description}\n{choice_str}{default_value_str}\n"
