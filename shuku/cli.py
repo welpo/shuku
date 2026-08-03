@@ -249,8 +249,8 @@ def process_file(
         subtitles = pysubs2.load(subtitle_path)
         line_skip_patterns = context.config["line_skip_patterns"]
         skip_patterns = [re.compile(pattern) for pattern in line_skip_patterns]
-        if skip_patterns:
-            filter_skip_patterns_in_place(subtitles, skip_patterns)
+        drop_empty_lines_in_place(subtitles)
+        filter_skip_patterns_in_place(subtitles, skip_patterns)
         skip_intervals = get_skipped_chapter_intervals(context)
         if skip_intervals:
             filter_chapters_in_place(subtitles, skip_intervals)
@@ -866,6 +866,18 @@ def filter_skip_patterns_in_place(
         for line in subs
         if not any(pattern.match(line.plaintext) for pattern in skip_patterns)
     ]
+
+
+def drop_empty_lines_in_place(subs: pysubs2.SSAFile) -> None:
+    """
+    Remove lines with no speech.
+
+    pysubs2 strips ASS override tags from plaintext, so {…} sound effects and
+    styling-only signs come through empty. They carry no text, but would still
+    contribute a segment to the condensed audio.
+    """
+    logging.debug("Dropping subtitle lines with no text…")
+    subs.events = [line for line in subs if line.plaintext.strip()]
 
 
 def get_skipped_chapter_intervals(context: Context) -> list[tuple[float, float]]:

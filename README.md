@@ -280,6 +280,8 @@ skip_chapters = ['avant', '1. opening credits', 'logos/opening credits', 'openin
 
 Regular expression patterns for subtitle lines to skip. Useful for removing song lyrics, sound effects, etc. Use single quotes to enclose patterns.
 
+Lines with no text (styling-only subtitles, or sound effects wrapped in `{}`, which subtitle formats treat as styling tags) are always skipped, even with an empty list of patterns.
+
 Default:
 
 ```toml
@@ -291,10 +293,9 @@ line_skip_patterns = [
   # Skip lines containing only '・～'
   '^・(～|〜)$',
   # Skip lines entirely enclosed in various types of brackets.
-  '^\\([^)]*\\)$',  # Parentheses ()
+  '^\([^)]*\)$',  # Parentheses ()
   '^（[^）]*）$',  # Full-width parentheses （）
-  '^\\[.*\\]$',  # Square brackets []
-  '^\\{[^\\}]*\\}$',  # Curly braces {}
+  '^\[.*\]$',  # Square brackets []
   '^<[^>]*>$',  # Angle brackets <>
 ]
 ```

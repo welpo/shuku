@@ -24,6 +24,7 @@ from shuku.cli import (
     create_concat_file,
     create_condensed_subtitles,
     display_and_select_stream,
+    drop_empty_lines_in_place,
     encode_final_audio,
     extract_season_and_episode,
     extract_specific_subtitle,
@@ -2436,6 +2437,60 @@ def test_main_processing_with_chapter_filtering(base_context):
         "Also should remain",
     ]
     assert [sub.text for sub in subs] == expected_texts
+
+
+def test_drop_empty_lines_removes_lines_with_no_plaintext():
+    subs = pysubs2.SSAFile()
+    test_lines = [
+        (1000, 2000, "{music}"),  # Stripped to nothing by pysubs2.
+        (3000, 4000, r"{\pos(320,240)}"),  # Styling-only sign.
+        (5000, 6000, "   "),  # Whitespace only.
+        (7000, 8000, "Real dialogue"),  # Should stay.
+    ]
+    for start, end, text in test_lines:
+        subs.events.append(pysubs2.SSAEvent(start=start, end=end, text=text))
+    drop_empty_lines_in_place(subs)
+    assert [sub.text for sub in subs] == ["Real dialogue"]
+
+
+def test_process_file_drops_empty_lines_without_skip_patterns(tmp_path):
+    video_path = str(tmp_path / "test.mkv")
+    Path(video_path).touch()
+    sub_path = str(tmp_path / "test.srt")
+    with open(sub_path, "w") as f:
+        f.write("""1
+00:00:01,000 --> 00:00:02,000
+{music}
+
+2
+00:00:03,000 --> 00:00:04,000
+Real dialogue""")
+    config = deepcopy(DEFAULT_CONFIG)
+    config["line_skip_patterns"] = []  # Empty lines are dropped regardless.
+    config["condensed_audio.enabled"] = False
+    config["condensed_video.enabled"] = False
+    config["condensed_subtitles.enabled"] = True
+    with (
+        patch("shuku.cli.FFmpeg"),
+        patch("shuku.cli.get_all_stream_info") as mock_stream_info,
+        patch("shuku.cli.find_subtitles", return_value=sub_path),
+    ):
+        mock_stream_info.return_value = {
+            "video": [],
+            "audio": [],
+            "subtitle": [],
+            "chapters": [],
+        }
+        args = argparse.Namespace(
+            subtitles=None,
+            output=None,
+            sub_track_id=None,
+            audio_track_id=None,
+            sub_delay=0,
+        )
+        process_file(video_path, config, args)
+        output_subs = pysubs2.load(str(tmp_path / "test (condensed).srt"))
+        assert [sub.text for sub in output_subs] == ["Real dialogue"]
 
 
 def test_process_file_with_chapter_filtering(tmp_path):

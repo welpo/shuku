@@ -14,11 +14,13 @@ from shuku.config import (
     ConfigItem,
     ConfigValidationError,
     dump_default_config,
+    flatten_dict,
     generate_config_content,
     generate_item_content,
     get_default_config_path,
     load_config,
     resolve_aliases,
+    toml_value,
     validate_bitrate_or_scale,
     validate_config,
 )
@@ -294,15 +296,12 @@ def test_generate_config_content():
         # Check default values.
         if item.default_value is None:
             assert "None" not in content
-        elif isinstance(item.default_value, bool):
-            assert f"{parts[-1]} = {str(item.default_value).lower()}" in content
-        elif key == "line_skip_patterns":
-            assert f"{parts[-1]} = [" in content
-            for pattern in item.default_value:
-                assert repr(pattern) in content
-            assert "]" in content
+        elif isinstance(item.default_value, list):
+            assert f"{parts[-1]} = [\n" in content
+            for entry in item.default_value:
+                assert f"    {toml_value(entry)},\n" in content
         else:
-            assert f"{parts[-1]} = {repr(item.default_value)}" in content
+            assert f"{parts[-1]} = {toml_value(item.default_value)}" in content
     # Check the file ends with a single newline.
     assert content.endswith("\n")
     assert not content.endswith("\n\n")
@@ -645,6 +644,36 @@ def test_validation_errors(codec, quality, expected_error):
     assert expected_error in str(exc_info.value)
 
 
+def test_generated_config_roundtrips():
+    expected = {
+        key: value for key, value in DEFAULT_CONFIG.items() if value is not None
+    }
+    parsed = flatten_dict(tomllib.loads(generate_config_content()))
+    assert parsed == expected
+
+
+# Values are emitted as TOML literal strings, which cannot contain an apostrophe
+# or a newline. Commented-out examples are invisible to the test above, so check
+# every value the generator can emit, not just the ones the document exposes.
+@pytest.mark.parametrize("item", CONFIG_OPTIONS.values(), ids=CONFIG_OPTIONS.keys())
+def test_config_values_roundtrip_as_toml(item):
+    for value in (item.default_value, item.example_value):
+        if value is not None:
+            assert tomllib.loads(f"value = {toml_value(value)}")["value"] == value
+
+
+@pytest.mark.parametrize("value", ["it's here", "line\nnext"])
+def test_toml_value_rejects_strings_it_cannot_represent(value):
+    with pytest.raises(ValueError, match="cannot contain"):
+        toml_value(value)
+
+
+@pytest.mark.parametrize("value", [None, {"a", "b"}, object()])
+def test_toml_value_rejects_unsupported_types(value):
+    with pytest.raises(TypeError, match="Unsupported TOML value"):
+        toml_value(value)
+
+
 def test_generate_item_content_with_dict_default_value():
     key = "my_key"
     item = ConfigItem(
@@ -654,7 +683,7 @@ def test_generate_item_content_with_dict_default_value():
     )
     result = generate_item_content(key, item)
     expected_output = """# My description
-my_key = { "key1" = 'value1', "key2" = 42 }
+my_key = { 'key1' = 'value1', 'key2' = 42 }
 
 """
     assert result == expected_output
