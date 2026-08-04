@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
 from functools import wraps
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional
 
@@ -76,13 +76,11 @@ CODEC_TO_FORMAT_IDENTIFIER = {
     "webvtt": "vtt",
 }
 
-# Temporary workaround as I can't get Nuitka to get along with Poetry.
-# See https://github.com/Nuitka/Nuitka/issues/2965
+# PyInstaller builds don't bundle the package metadata, so fall back to a
+# hardcoded version kept in sync by the pre-release hook.
 try:
-    from importlib.metadata import version
-
     VERSION = version(PROGRAM_NAME)
-except ImportError:  # pragma: no cover
+except PackageNotFoundError:  # pragma: no cover
     VERSION = "0.0.7"  # Managed by 'release' script.
 
 
@@ -137,6 +135,8 @@ def log_execution_time(
     log_level: str = "debug", message_template: Optional[str] = None
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        func_name = getattr(func, "__name__", repr(func))
+
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             start_time = time.time()
@@ -147,11 +147,9 @@ def log_execution_time(
                 duration = end_time - start_time
                 formatted_duration = format_duration(duration)
                 if message_template:
-                    log_message = message_template.format(
-                        func.__name__, formatted_duration
-                    )
+                    log_message = message_template.format(func_name, formatted_duration)
                 else:
-                    log_message = f"{func.__name__} executed in {formatted_duration}"
+                    log_message = f"{func_name} executed in {formatted_duration}"
                 logging_function = getattr(logging, log_level.lower())
                 logging_function(log_message)
             return result
@@ -934,7 +932,7 @@ def extract_speech_timing_from_subtitles(
             segments.append((start, end))
     merged_segments = merge_overlapping_segments(segments)
     if INCLUDE_DEMO_UTILS:
-        save_segments_as_json(context, merged_segments)  # type: ignore  # pragma: no cover
+        save_segments_as_json(context, merged_segments)  # pragma: no cover
         sys.exit(0)  # pragma: no cover
     return merged_segments
 
@@ -1100,7 +1098,9 @@ def create_concat_file(segment_files: list[str], temp_dir: str) -> str:
 def encode_final_audio(context: Context, concat_file: str, output_path: str) -> None:
     ffmpeg_audio_options = get_ffmpeg_audio_options(context, media_type="audio")
     custom_args = context.config.get("condensed_audio.custom_ffmpeg_args") or {}
-    ffmpeg_options = ffmpeg_audio_options | custom_args | context.metadata
+    ffmpeg_options: dict[str, Any] = (
+        ffmpeg_audio_options | custom_args | context.metadata
+    )
     audio_codec = context.config["condensed_audio.audio_codec"]
     ffmpeg = FFmpeg().option("y").input(concat_file, f="concat", safe=0)
     maps = ["0:a"]
@@ -1369,7 +1369,9 @@ def create_condensed_video(
     video_options = get_ffmpeg_video_options(context)
     audio_options = get_ffmpeg_audio_options(context, media_type="video")
     custom_args = context.config.get("condensed_video.custom_ffmpeg_args") or {}
-    ffmpeg_options = video_options | audio_options | custom_args | context.metadata
+    ffmpeg_options: dict[str, Any] = (
+        video_options | audio_options | custom_args | context.metadata
+    )
     logging.debug(f"ffmpeg options: {ffmpeg_options}")
     ffmpeg = (
         FFmpeg()

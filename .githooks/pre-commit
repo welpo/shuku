@@ -10,28 +10,28 @@ ensure_command() {
 
 run_ruff() {
     echo "Checking code with Ruff…"
-    poetry run ruff check
+    uv run ruff check
     echo "Ruff checks passed."
 }
 
 run_tests() {
     echo "Running tests with pytest…"
-    poetry run pytest
+    uv run pytest
     echo "All tests passed."
 }
 
-run_mypy() {
-    echo "Running static type checks with mypy…"
-    poetry run mypy shuku
+run_type_check() {
+    echo "Running static type checks with ty…"
+    uv run ty check shuku
     echo "Type checking passed."
 }
 
 start_time=$(date +%s)
 
-ensure_command poetry
+ensure_command uv
 run_ruff
 run_tests
-run_mypy
+run_type_check
 
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))

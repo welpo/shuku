@@ -38,21 +38,18 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
         with:
+          enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --only main,build
+        run: uv sync --no-default-groups --group build
 
       - name: Build executable
         shell: bash
-        run: poetry run pyinstaller --clean shuku.spec
+        run: uv run pyinstaller --clean shuku.spec
 
       - name: Generate build attestations
         uses: actions/attest-build-provenance@v4
@@ -147,17 +144,17 @@ jobs:
           git config --global user.name "welpo"
           git config --global user.email "welpo@users.noreply.github.com"
 
-      - name: Install git-cliff & poetry
-        run: pipx install git-cliff poetry
+      - name: Install git-cliff
+        run: pipx install git-cliff
 
-      - name: Install Python
-        uses: actions/setup-python@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
         with:
+          enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "poetry"
 
-      - name: Build wheel
-        run: poetry build --output=wheels
+      - name: Build distributions
+        run: uv build --out-dir wheels
 
       - name: Publish to PyPI/TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1

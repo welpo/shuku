@@ -20,7 +20,7 @@ Output shuku_demo.gif
 #################
 Hide
 Type 'cd ~/git/shuku' Enter
-Type 'poetry shell' Enter
+Type 'source .venv/bin/activate' Enter
 Sleep 2s
 Type 'cd ~/アニメ' Enter
 Type 'mv ~/.config/shuku/shuku.toml ~/.config/shuku/shuku.toml.backup' Enter

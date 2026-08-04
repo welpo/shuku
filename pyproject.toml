@@ -1,13 +1,11 @@
-[tool.poetry]
+[project]
 name = "shuku"
 version = "0.0.7"  # Managed by 'release' script.
 description = "A command-line tool for condensing video and audio files based on subtitle timestamps, optimizing media content for language learning and study."
-authors = ["Óscar Fernández <osc@osc.garden>"]
+authors = [{ name = "Óscar Fernández", email = "osc@osc.garden" }]
 license = "GPL-3.0-or-later"
-homepage = "https://github.com/welpo/shuku"
-repository = "https://github.com/welpo/shuku"
-documentation = "https://github.com/welpo/shuku"
 readme = "README.md"
+requires-python = ">=3.11"
 keywords = ["media-condensation", "video", "audio", "subtitle", "subtitles", "condenser", "language learning", "immersion learning", "summarization"]
 classifiers = [
     "Environment :: Console",
@@ -17,42 +15,44 @@ classifiers = [
     "Topic :: Education",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
     "Topic :: Multimedia :: Video",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "pysubs2>=1.7.3,<2",
+    "python-ffmpeg>=2.0.12,<3",
+]
 
-[tool.poetry.scripts]
+[project.urls]
+Homepage = "https://github.com/welpo/shuku"
+Repository = "https://github.com/welpo/shuku"
+Documentation = "https://github.com/welpo/shuku"
+
+[project.scripts]
 shuku = "shuku.cli:main"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-pysubs2 = "^1.7.3"
-python-ffmpeg = "^2.0.12"
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.11.1"
-pytest = "^9.0.0"
-pytest-cov = "^7.0.0"
-ruff = "^0.16.0"
-
-[tool.poetry.group.build.dependencies]
-pyinstaller = {version = "^6.11.0", python = ">=3.11,<3.14"}
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0,<10",
+    "pytest-cov>=7.0.0,<8",
+    "ruff>=0.16.0,<0.17",
+    "ty>=0.0.65,<0.1",
+]
+build = [
+    "pyinstaller>=6.11.0,<7 ; python_full_version < '3.14'",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
-check_untyped_defs = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_incomplete_defs = true
-no_implicit_optional = true
-warn_no_return = true
-warn_redundant_casts = true
-strict_equality = true
+[tool.hatch.build.targets.wheel]
+packages = ["shuku"]
+
+[tool.hatch.build.targets.sdist]
+include = ["shuku", "CHANGELOG.md"]
+
+[tool.ty.rules]
+possibly-unresolved-reference = "error"
 
 [tool.ruff]
 target-version = "py311"
@@ -60,13 +60,6 @@ target-version = "py311"
 [tool.ruff.lint]
 logger-objects = ["logging_setup.logger"]
 select = ["I"]
-
-[[tool.mypy.overrides]]
-module = "pysubs2.*"
-ignore_missing_imports = true
-[[tool.mypy.overrides]]
-module = "ffmpeg.*"
-ignore_missing_imports = true
 
 [tool.coverage.run]
 omit = [

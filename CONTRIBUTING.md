@@ -18,10 +18,10 @@ If you're not sure how to contribute or need help with something, please don't h
 
 To set up your development environment:
 
-1. [Install Poetry](https://python-poetry.org/docs/#installation):
+1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/):
 
    ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 2. Clone the repository and navigate to the project directory:
@@ -34,41 +34,35 @@ To set up your development environment:
 3. Install the project dependencies:
 
    ```bash
-   poetry install --with dev
+   uv sync
    ```
 
-4. Activate the virtual environment:
-
-   ```bash
-   poetry shell
-   ```
-
-Now you can run `shuku` within the shell:
+Now you can run `shuku` with:
 
 ```bash
-shuku --help
+uv run shuku --help
 ```
 
-The `shuku` command will be available within the `poetry shell` and is linked to the project's source code. Code changes will be immediately reflected.
+`uv run` uses the project's virtual environment (`.venv`, created by `uv sync`) and is linked to the project's source code. Code changes will be immediately reflected. If you prefer, activate the environment with `source .venv/bin/activate` and call `shuku` directly.
 
 ## Useful commands
 
 ### Running tests
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 ### Checking code coverage
 
 ```bash
-poetry run pytest --cov=shuku
+uv run pytest --cov=shuku
 ```
 
 ### Checking types
 
 ```bash
-poetry run mypy shuku
+uv run ty check shuku
 ```
 
 ## Pull requests
@@ -87,9 +81,9 @@ Please make sure the following is done when submitting a pull request:
 
 Our integration systems run automated tests to guard against mistakes. To speed things up, make sure you have done the following before submitting your PR:
 
-- Make sure all new and existing tests pass with `poetry run pytest`.
-- Run `poetry run mypy shuku` to check for type errors.
-- Run `poetry run ruff {file/dir}` to format your code.
+- Make sure all new and existing tests pass with `uv run pytest`.
+- Run `uv run ty check shuku` to check for type errors.
+- Run `uv run ruff format {file/dir}` to format your code.
 - If necessary, update the documentation (i.e. `README.md`).
 
 You might find the [hooks in `.githooks/`](https://github.com/welpo/doteki/tree/main/.githooks) useful. Read more on the [pre-commit githook section](#pre-commit-githook).
@@ -133,7 +127,7 @@ Example:
 ## Coding guidelines
 
 - Use [`Ruff`](https://docs.astral.sh/ruff/) to format your code before submitting a pull request.
-- Functions should be type annotated. Use `mypy` to check for type errors.
+- Functions should be type annotated. Use [`ty`](https://docs.astral.sh/ty/) to check for type errors.
 - Keep the code clean and maintainable. Here are some guidelines:
 
 <details>
