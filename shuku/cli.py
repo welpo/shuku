@@ -266,7 +266,7 @@ def process_file(
 
 
 def verify_ffmpeg_and_ffprobe_availability() -> None:
-    version_pattern = re.compile(r"version\s+([\d.]+)")
+    version_pattern = re.compile(r"version\s+n?([\d.]+)")
     for tool in ["ffmpeg", "ffprobe"]:
         try:
             version_info = FFmpeg(executable=tool).option("version").execute()

@@ -1182,6 +1182,19 @@ def test_ffmpeg_and_ffprobe_available(caplog):
             assert "not found or not working properly" not in caplog.text
 
 
+def test_ffmpeg_version_with_n_prefix(caplog):
+    # FFmpeg's own git tags are "nX.Y.Z"; some distros (e.g. Arch) report
+    # that "n" prefix as-is in `ffmpeg -version` (see issue #153).
+    mock_ffmpeg = MagicMock()
+    mock_ffmpeg().option().execute.return_value = b"ffmpeg version n8.1.2"
+    with patch("shuku.cli.FFmpeg", mock_ffmpeg):
+        with caplog.at_level(logging.DEBUG):
+            verify_ffmpeg_and_ffprobe_availability()
+            assert "ffmpeg version: 8.1.2" in caplog.text
+            assert "ffprobe version: 8.1.2" in caplog.text
+            assert "Unknown" not in caplog.text
+
+
 def test_extract_speech_timing_discards_zero_length_segments(sample_subs, base_context):
     base_context.args.sub_delay = -300000
     base_context.config["padding"] = 0
