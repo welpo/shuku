@@ -483,11 +483,11 @@ A widely supported format compatible with most devices.
 Offers better sound quality than MP3 at similar bitrates.
 
 - **How to set quality**:
-  - **Variable Bitrate (VBR)**: Use a single digit from `1` to `5` (e.g., `'2'`, `'5'`). Higher numbers mean better quality.
+  - **Variable Bitrate (VBR)**: Use a number from `0.1` to `2` (e.g., `1`, `1.8`). Higher numbers mean better quality.
   - **Bitrate**: Specify the bitrate in kilobits per second with `'k'` (e.g., `'128k'`).
 
 - **Examples**:
-  - `'2'`: Good quality with reasonable file size.
+  - `1`: Good quality with reasonable file size.
   - `'128k'`: Standard quality.
 
 #### `flac`

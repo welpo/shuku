@@ -23,7 +23,7 @@ AUDIO_CODEC_ALIASES = {
     "opus": "libopus",
     "ogg": "libopus",
 }
-CODEC_MAX_QUALITY = {"libmp3lame": 9, "aac": 10}
+CODEC_MAX_QUALITY = {"libmp3lame": 9, "aac": 2}
 DEFAULT_MAX_QUALITY = 10
 DEFAULT_AUDIO_QUALITY = "48k"
 FILE_EXISTS_OPTIONS = ["ask", "overwrite", "rename", "skip"]

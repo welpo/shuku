@@ -2592,6 +2592,15 @@ def test_aac_codec_bitrate(base_context):
     assert result == {"c:a": "aac", "ac": 2, "b:a": "128k"}
 
 
+@pytest.mark.parametrize("quality", ["1.2", 1.2])
+def test_aac_codec_fractional_quality(base_context, quality):
+    base_context.config.update(
+        {"condensed_audio.audio_codec": "aac", "condensed_audio.audio_quality": quality}
+    )
+    result = get_ffmpeg_audio_options(base_context)
+    assert result == {"c:a": "aac", "ac": 2, "q:a": quality}
+
+
 def test_opus_codec_numeric(base_context):
     base_context.config.update(
         {

@@ -550,10 +550,13 @@ def test_load_config_no_config_file(config_path, caplog):
         ("aac", "128k", True),
         ("aac", "1", True),
         ("aac", 1, True),
-        ("aac", "5", True),
+        ("aac", "2", True),
+        ("aac", "1.2", True),
+        ("aac", 1.2, True),
+        ("aac", "5", True),  # Logs a warning.
         ("aac", "invalid", False),
-        ("aac", 6, True),
-        ("aac", "6", True),
+        ("aac", 6, True),  # Logs a warning.
+        ("aac", "6", True),  # Logs a warning.
         ("aac", "V6", False),
         # libopus.
         ("libopus", "64k", True),
@@ -609,6 +612,8 @@ def test_audio_codec_quality(config_type, codec, quality, should_pass):
         ("libopus", "1500k", "Unusual bitrate"),
         ("libmp3lame", "10", "unusually high"),
         ("libmp3lame", 10, "unusually high"),
+        ("aac", "3", "unusually high"),
+        ("aac", 3, "unusually high"),
         ("aac", "11", "unusually high"),
         ("aac", 11, "unusually high"),
         ("libopus", "11", "unusually high"),
@@ -617,6 +622,7 @@ def test_audio_codec_quality(config_type, codec, quality, should_pass):
         ("libmp3lame", "v11", "unusually high"),
         ("libmp3lame", "128k", None),
         ("libmp3lame", "320k", None),
+        ("aac", "2", None),
     ],
 )
 def test_warnings(codec, quality, expected_warning, caplog):

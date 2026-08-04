@@ -1138,8 +1138,10 @@ def get_ffmpeg_audio_options(
     if audio_codec == "flac":
         options["compression_level"] = audio_quality
     elif audio_codec == "aac":
-        key = "q:a" if str(audio_quality).isdigit() else "b:a"
-        options[key] = audio_quality
+        if isinstance(audio_quality, str) and audio_quality.lower().endswith("k"):
+            options["b:a"] = audio_quality
+        else:
+            options["q:a"] = audio_quality
     elif audio_codec == "libopus":
         if isinstance(audio_quality, str) and audio_quality.lower().endswith("k"):
             options["b:a"] = audio_quality
