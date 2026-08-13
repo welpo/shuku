@@ -4,6 +4,17 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.9](https://github.com/welpo/shuku/compare/v0.0.8..v0.0.9) - 2026-08-13
+
+### 🐛 Bug fixes
+
+- *(cli)* Disambiguate identical subtitle tracks ([c0eed41](https://github.com/welpo/shuku/commit/c0eed410fd50a56a2b2298bba13133090f5c3b86)) by [@welpo](https://github.com/welpo)
+- *(cli)* Avoid signs/songs tracks set as default ([75ccd88](https://github.com/welpo/shuku/commit/75ccd88045603982c1b7886b46ab514d3a31939e)) by [@welpo](https://github.com/welpo)
+- *(cli)* Prefer non-forced subtitle tracks ([651c63f](https://github.com/welpo/shuku/commit/651c63fad4b9434a32c14090150a657f519a0b6e)) by [@welpo](https://github.com/welpo)
+- *(cli)* Drop subtitle lines with unusable timings ([eca1a3a](https://github.com/welpo/shuku/commit/eca1a3a8abc5c7d127acb488ee613f6f05adef43)) by [@welpo](https://github.com/welpo)
+- *(cli)* Apply subtitle delay before filtering lines ([f086388](https://github.com/welpo/shuku/commit/f08638858fc35970eec96b8ed303cb2396ebf6bb)) by [@welpo](https://github.com/welpo)
+- *(cli)* Skip commented-out ASS/SSA lines ([0f2480b](https://github.com/welpo/shuku/commit/0f2480b3cbd1d9f4e79039bc15d27fdbeb1c940d)) by [@welpo](https://github.com/welpo)
+
 ## [0.0.8](https://github.com/welpo/shuku/compare/v0.0.7..v0.0.8) - 2026-08-04
 
 ### 🐛 Bug fixes

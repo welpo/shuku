@@ -81,7 +81,7 @@ CODEC_TO_FORMAT_IDENTIFIER = {
 try:
     VERSION = version(PROGRAM_NAME)
 except PackageNotFoundError:  # pragma: no cover
-    VERSION = "0.0.8"  # Managed by 'release' script.
+    VERSION = "0.0.9"  # Managed by 'release' script.
 
 
 class FileProcessingError(Exception):
