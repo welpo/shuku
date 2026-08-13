@@ -284,6 +284,7 @@ Some lines are skipped regardless of the patterns you set:
 
 - Lines with no text: styling-only subtitles, or sound effects wrapped in `{}`, which subtitle formats treat as styling tags.
 - Commented-out ASS/SSA events.
+- Lines with invalid timing.
 
 Default:
 

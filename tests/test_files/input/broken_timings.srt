@@ -1,0 +1,19 @@
+1
+00:00:40,000 --> 00:00:41,000
+Real line
+
+2
+00:00:50,000 --> 00:00:50,000
+Zero length
+
+3
+00:01:00,000 --> 00:00:59,000
+Ends before it starts
+
+4
+00:03:00,900 --> 00:03:01,000
+Starts just past the file
+
+5
+00:03:10,000 --> 00:03:11,000
+Starts well after the file

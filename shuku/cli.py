@@ -254,6 +254,9 @@ def process_file(
         skip_intervals = get_skipped_chapter_intervals(context)
         if skip_intervals:
             filter_chapters_in_place(subtitles, skip_intervals)
+        validate_subtitle_timing_in_place(
+            subtitles, get_media_duration(context.stream_info)
+        )
         speech_segments = extract_speech_timing_from_subtitles(context, subtitles)
         if not speech_segments:
             raise FileProcessingError(file_path, "No valid segments found")
@@ -879,6 +882,59 @@ def drop_comment_lines_in_place(subs: pysubs2.SSAFile) -> None:
     """Remove ASS/SSA events that players do not display."""
     logging.debug("Dropping commented-out subtitle lines…")
     subs.events = [line for line in subs if not line.is_comment]
+
+
+def validate_subtitle_timing_in_place(
+    subs: pysubs2.SSAFile, duration_seconds: Optional[float]
+) -> None:
+    """Drop unusable cues and clamp negative starts."""
+    logging.debug("Validating subtitle timings…")
+    duration_ms = round(duration_seconds * 1000) if duration_seconds else None
+    if duration_ms is None:
+        logging.debug("Unknown media duration; skipping out-of-file checks.")
+    kept = []
+    invalid = outside = clamped = 0
+    for line in subs:
+        if line.end <= line.start:
+            invalid += 1
+            continue
+        if line.end <= 0:  # Shifted off the front of the media by a negative delay.
+            outside += 1
+            continue
+        if line.start < 0:
+            line.start = 0
+            clamped += 1
+        if duration_ms is not None and line.start >= duration_ms:
+            outside += 1
+            continue
+        kept.append(line)
+    subs.events = kept
+    dropped = invalid + outside
+    if dropped:
+        logging.warning(
+            f"Dropped {dropped} unusable subtitle {pluralize(dropped, 'line')}: "
+            f"{invalid} without duration, {outside} outside the media. "
+            "Check that the subtitles match this file."
+        )
+    if clamped:
+        logging.info(
+            f"Clamped {clamped} subtitle {pluralize(clamped, 'line')} "
+            "to the media's bounds."
+        )
+
+
+def get_media_duration(stream_info: dict[str, Any]) -> Optional[float]:
+    sources = [stream_info.get("format") or {}]
+    sources.extend(stream_info.get("video") or [])
+    sources.extend(stream_info.get("audio") or [])
+    for source in sources:
+        try:
+            duration = float(source.get("duration", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        if duration > 0:
+            return duration
+    return None
 
 
 def drop_empty_lines_in_place(subs: pysubs2.SSAFile) -> None:

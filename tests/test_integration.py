@@ -737,7 +737,12 @@ MULTI_TRACK_DIALOGUE_STREAM = "2"
 MULTI_TRACK_DIALOGUE = ["First line", "Second line", "Third line"]
 
 
-def write_subtitle_config(tmp_path, extra=""):
+def write_subtitle_config(tmp_path, extra="", *, audio=False):
+    audio_config = (
+        'enabled = true\naudio_codec = "flac"\naudio_quality = "0"'
+        if audio
+        else "enabled = false"
+    )
     config_file = tmp_path / "test_config.toml"
     config_file.write_text(f"""
 clean_output_filename = false
@@ -747,7 +752,7 @@ padding = 0
 enabled = true
 format = "srt"
 [condensed_audio]
-enabled = false
+{audio_config}
 [condensed_video]
 enabled = false
 """)
@@ -769,5 +774,68 @@ def test_chapters_are_skipped_using_delayed_timings(tmp_path):
         ],
     )
     assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
+    assert [line.text for line in output_subs] == ["Second line", "Third line"]
+
+
+def test_lines_outside_the_media_are_not_condensed(tmp_path):
+    config = write_subtitle_config(
+        tmp_path, 'line_skip_patterns = ["^Starts well after"]', audio=True
+    )
+    result = run_shuku(
+        MULTI_TRACK,
+        str(tmp_path),
+        config,
+        args=["--subtitles", "tests/test_files/input/broken_timings.srt"],
+    )
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    assert "Dropped 3 unusable subtitle lines" in result.stderr
+    assert "2 without duration, 1 outside the media" in result.stderr
+    output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
+    assert [line.text for line in output_subs] == ["Real line"]
+    duration = get_file_duration(str(tmp_path / "multi_track (condensed).flac"))
+    assert abs(duration - 1) < 0.1, f"Unexpected condensed duration: {duration}"
+
+
+def test_lines_shifted_across_the_start_are_clamped(tmp_path):
+    # A -40.5s delay leaves "First line" (40s-41s) straddling the start of the media.
+    config = write_subtitle_config(tmp_path, "skip_chapters = []")
+    result = run_shuku(
+        MULTI_TRACK,
+        str(tmp_path),
+        config,
+        args=[
+            "--sub-track-id",
+            MULTI_TRACK_DIALOGUE_STREAM,
+            "--sub-delay",
+            "-40500",
+        ],
+    )
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    assert "Clamped 1 subtitle line to the media's bounds." in result.stderr
+    output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
+    assert [line.text for line in output_subs] == MULTI_TRACK_DIALOGUE
+    assert output_subs[0].start == 0
+
+
+def test_lines_shifted_before_the_start_are_dropped(tmp_path):
+    # A -45s delay pushes "First line" (40s-41s) entirely off the front. The
+    # commented template at 35s is ignored before validation and must not inflate the
+    # warning or imply that usable subtitles mismatch the media.
+    config = write_subtitle_config(tmp_path, "skip_chapters = []")
+    result = run_shuku(
+        MULTI_TRACK,
+        str(tmp_path),
+        config,
+        args=[
+            "--sub-track-id",
+            MULTI_TRACK_DIALOGUE_STREAM,
+            "--sub-delay",
+            "-45000",
+        ],
+    )
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    assert "Dropped 1 unusable subtitle line" in result.stderr
+    assert "0 without duration, 1 outside the media" in result.stderr
     output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
     assert [line.text for line in output_subs] == ["Second line", "Third line"]
