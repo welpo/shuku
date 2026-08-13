@@ -1523,12 +1523,12 @@ def test_sort_subtitle_streams_preferred_language():
 
 def test_sort_subtitle_streams_forced_subtitles():
     streams = [
-        {"tags": {"language": "eng", "title": "English", "forced": "0"}},
-        {"tags": {"language": "eng", "title": "English (Forced)", "forced": "1"}},
+        {"tags": {"language": "eng"}, "disposition": {"forced": 0}},
+        {"tags": {"language": "eng"}, "disposition": {"forced": 1}},
     ]
     sorted_streams = sort_subtitle_streams(streams, ["eng"])
-    assert sorted_streams[0]["tags"]["forced"] == "1"
-    assert sorted_streams[1]["tags"]["forced"] == "0"
+    assert sorted_streams[0]["disposition"]["forced"] == 0
+    assert sorted_streams[1]["disposition"]["forced"] == 1
 
 
 def test_sort_subtitle_streams_penalized_keywords(sample_streams):

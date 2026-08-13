@@ -789,15 +789,16 @@ def extract_subtitles(context: Context) -> str:
             "but image-based formats cannot be parsed as text.\n"
             "Use -s/--subtitles to provide an external SRT or ASS file."
         )
-    subtitle_languages = context.config.get("subtitle_languages", [])
+    subtitle_languages = [
+        language.lower()
+        for language in (context.config.get("subtitle_languages") or [])
+    ]
     sorted_streams = sort_subtitle_streams(supported_streams, subtitle_languages)
     if sorted_streams != supported_streams:
         logging.debug("Streams have been sorted.")
     if subtitle_languages:
         best_stream = sorted_streams[0]
-        if best_stream["tags"].get("language", "").lower() in [
-            lang.lower() for lang in subtitle_languages
-        ]:
+        if best_stream["tags"].get("language", "").lower() in subtitle_languages:
             logging.info(
                 f"Using subtitle stream: {best_stream['tags'].get('language')}"
             )
@@ -814,27 +815,33 @@ def extract_subtitles(context: Context) -> str:
 
 
 def sort_subtitle_streams(
-    streams: list[dict[str, Any]], preferred_languages: list[str] = []
+    streams: list[dict[str, Any]], preferred_languages: list[str] | None = None
 ) -> list[dict[str, Any]]:
-    def stream_sort_key(stream: dict[str, Any]) -> tuple[int, int, int, int, str]:
-        tags = stream.get("tags", {})
-        language = tags.get("language", "").lower()
-        title = tags.get("title", "").lower()
-        lang_priority = (
-            (
-                preferred_languages.index(language)
-                if language in preferred_languages
-                else len(preferred_languages)
-            )
-            if preferred_languages
-            else 0
-        )
-        is_forced = int(tags.get("forced", "0") != "1")
-        is_default = int(stream.get("disposition", {}).get("default", 0) != 1)
-        title_penalty = sum(1 for word in PENALIZED_SUBTITLE_KEYWORDS if word in title)
-        return (lang_priority, is_forced, is_default, title_penalty, title)
+    languages = [lang.lower() for lang in (preferred_languages or [])]
+    return sorted(
+        streams,
+        key=lambda stream: subtitle_stream_sort_key(stream, languages),
+    )
 
-    return sorted(streams, key=stream_sort_key)
+
+def subtitle_stream_sort_key(
+    stream: dict[str, Any], preferred_languages: list[str]
+) -> tuple[int, int, int, int, str]:
+    tags = stream.get("tags", {})
+    language = tags.get("language", "").lower()
+    title = tags.get("title", "").lower()
+    lang_priority = next(
+        (i for i, preferred in enumerate(preferred_languages) if preferred == language),
+        len(preferred_languages),
+    )
+    disposition = stream.get("disposition", {})
+    return (
+        lang_priority,
+        int(bool(disposition.get("forced"))),
+        int(not disposition.get("default")),
+        sum(word in title for word in PENALIZED_SUBTITLE_KEYWORDS),
+        title,
+    )
 
 
 def extract_specific_subtitle(context: Context, stream_index: int) -> str:
