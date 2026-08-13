@@ -280,7 +280,10 @@ skip_chapters = ['avant', '1. opening credits', 'logos/opening credits', 'openin
 
 Regular expression patterns for subtitle lines to skip. Useful for removing song lyrics, sound effects, etc. Use single quotes to enclose patterns.
 
-Lines with no text (styling-only subtitles, or sound effects wrapped in `{}`, which subtitle formats treat as styling tags) are always skipped, even with an empty list of patterns.
+Some lines are skipped regardless of the patterns you set:
+
+- Lines with no text: styling-only subtitles, or sound effects wrapped in `{}`, which subtitle formats treat as styling tags.
+- Commented-out ASS/SSA events.
 
 Default:
 

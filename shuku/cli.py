@@ -247,6 +247,7 @@ def process_file(
         subtitles = pysubs2.load(subtitle_path)
         line_skip_patterns = context.config["line_skip_patterns"]
         skip_patterns = [re.compile(pattern) for pattern in line_skip_patterns]
+        drop_comment_lines_in_place(subtitles)
         drop_empty_lines_in_place(subtitles)
         filter_skip_patterns_in_place(subtitles, skip_patterns)
         skip_intervals = get_skipped_chapter_intervals(context)
@@ -864,6 +865,12 @@ def filter_skip_patterns_in_place(
         for line in subs
         if not any(pattern.match(line.plaintext) for pattern in skip_patterns)
     ]
+
+
+def drop_comment_lines_in_place(subs: pysubs2.SSAFile) -> None:
+    """Remove ASS/SSA events that players do not display."""
+    logging.debug("Dropping commented-out subtitle lines…")
+    subs.events = [line for line in subs if not line.is_comment]
 
 
 def drop_empty_lines_in_place(subs: pysubs2.SSAFile) -> None:
