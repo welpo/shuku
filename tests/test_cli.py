@@ -1531,6 +1531,21 @@ def test_sort_subtitle_streams_forced_subtitles():
     assert sorted_streams[1]["disposition"]["forced"] == 1
 
 
+def test_sort_subtitle_streams_penalized_default_track():
+    streams = [
+        {
+            "tags": {"language": "eng", "title": "Signs & Songs"},
+            "disposition": {"default": 1},
+        },
+        {
+            "tags": {"language": "eng", "title": "Full Subtitles"},
+            "disposition": {"default": 0},
+        },
+    ]
+    sorted_streams = sort_subtitle_streams(streams, ["eng"])
+    assert sorted_streams[0]["tags"]["title"] == "Full Subtitles"
+
+
 def test_sort_subtitle_streams_penalized_keywords(sample_streams):
     sorted_streams = sort_subtitle_streams(sample_streams, ["eng"])
     assert sorted_streams[0]["tags"]["title"] == "English"

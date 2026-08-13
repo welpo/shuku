@@ -838,8 +838,8 @@ def subtitle_stream_sort_key(
     return (
         lang_priority,
         int(bool(disposition.get("forced"))),
-        int(not disposition.get("default")),
         sum(word in title for word in PENALIZED_SUBTITLE_KEYWORDS),
+        int(not disposition.get("default")),
         title,
     )
 
