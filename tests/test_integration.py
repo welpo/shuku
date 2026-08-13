@@ -722,3 +722,52 @@ def test_cover_art_disabled_via_config(tmp_path):
     assert output_file.exists()
     cover_info = get_cover_art_info(str(output_file))
     assert cover_info is None, "Cover art embedded despite config disable"
+
+
+# multi_track.mkv is 180.824 seconds long, and carries:
+#   - stream 0: Japanese audio
+#   - stream 1: Japanese subtitles, untitled, default: a typesetting track holding one
+#     sign and five commented-out templates
+#   - stream 2: Japanese subtitles, untitled: three dialogue lines at 40s, 50s and 60s,
+#     plus two commented-out events
+#   - stream 3: Japanese subtitles, untitled, forced: five non-dialogue signs
+#   - chapters: "Opening" (0-30s) and "Main" (30s-end)
+MULTI_TRACK = "tests/test_files/input/multi_track.mkv"
+MULTI_TRACK_DIALOGUE_STREAM = "2"
+MULTI_TRACK_DIALOGUE = ["First line", "Second line", "Third line"]
+
+
+def write_subtitle_config(tmp_path, extra=""):
+    config_file = tmp_path / "test_config.toml"
+    config_file.write_text(f"""
+clean_output_filename = false
+padding = 0
+{extra}
+[condensed_subtitles]
+enabled = true
+format = "srt"
+[condensed_audio]
+enabled = false
+[condensed_video]
+enabled = false
+""")
+    return str(config_file)
+
+
+def test_chapters_are_skipped_using_delayed_timings(tmp_path):
+    # "First line" plays at 40s, landing inside the opening chapter once delayed.
+    config = write_subtitle_config(tmp_path, 'skip_chapters = ["opening"]')
+    result = run_shuku(
+        MULTI_TRACK,
+        str(tmp_path),
+        config,
+        args=[
+            "--sub-track-id",
+            MULTI_TRACK_DIALOGUE_STREAM,
+            "--sub-delay",
+            "-15000",
+        ],
+    )
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
+    assert [line.text for line in output_subs] == ["Second line", "Third line"]

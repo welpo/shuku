@@ -20,6 +20,7 @@ from shuku.cli import (
     PENALIZED_SUBTITLE_KEYWORDS,
     Context,
     FileProcessingError,
+    apply_subtitle_delay_in_place,
     convert_to_lrc,
     create_concat_file,
     create_condensed_subtitles,
@@ -1198,6 +1199,7 @@ def test_ffmpeg_version_with_n_prefix(caplog):
 def test_extract_speech_timing_discards_zero_length_segments(sample_subs, base_context):
     base_context.args.sub_delay = -300000
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, sample_subs)
     segments = extract_speech_timing_from_subtitles(base_context, sample_subs)
     assert segments == [], "Zero-duration segments should be discarded"
 
@@ -1208,6 +1210,7 @@ def test_create_condensed_subtitles_positive_delay(tmp_path, sample_subs, base_c
     # Expected condensed output: 0-1s, 1-2s (as if subs were originally correct).
     base_context.args.sub_delay = 1000
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, sample_subs)
     speech_segments = extract_speech_timing_from_subtitles(base_context, sample_subs)
     create_condensed_subtitles(base_context, sample_subs, speech_segments)
     output_path = tmp_path / "input (condensed).srt"
@@ -1239,6 +1242,7 @@ Second line
 Later line""")
     base_context.args.sub_delay = -2000
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, subs)
     segments = extract_speech_timing_from_subtitles(base_context, subs)
     # Original times after -2s delay:
     # - 0.5-1.0s becomes -1.5 to -1.0 -> clamps to 0,0
@@ -1271,6 +1275,7 @@ def test_create_condensed_subtitles_negative_delay(tmp_path, sample_subs, base_c
     # With -0.5s delay: 0.5-1.5s, 2.5-3.5s (for segment extraction).
     base_context.args.sub_delay = -0.5
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, sample_subs)
     speech_segments = extract_speech_timing_from_subtitles(base_context, sample_subs)
     create_condensed_subtitles(base_context, sample_subs, speech_segments)
     output_path = tmp_path / "input (condensed).srt"
@@ -2230,6 +2235,7 @@ def test_extract_speech_timing_respects_subtitle_delay(base_context):
     # Positive delay of 1 second.
     base_context.args.sub_delay = 1000
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, subs)
     segments = extract_speech_timing_from_subtitles(base_context, subs)
     # Segments should be shifted forward by 1 second.
     expected_segments = [
@@ -2245,6 +2251,7 @@ def test_extract_speech_timing_respects_negative_subtitle_delay(base_context):
     subs.append(pysubs2.SSAEvent(start=4000, end=5000, text="Line 2"))  # 4-5 seconds.
     base_context.args.sub_delay = -1000
     base_context.config["padding"] = 0
+    apply_subtitle_delay_in_place(base_context, subs)
     segments = extract_speech_timing_from_subtitles(base_context, subs)
     expected_segments = [
         (1.0, 2.0),

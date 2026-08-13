@@ -247,6 +247,7 @@ def process_file(
         subtitles = pysubs2.load(subtitle_path)
         line_skip_patterns = context.config["line_skip_patterns"]
         skip_patterns = [re.compile(pattern) for pattern in line_skip_patterns]
+        apply_subtitle_delay_in_place(context, subtitles)
         drop_comment_lines_in_place(subtitles)
         drop_empty_lines_in_place(subtitles)
         filter_skip_patterns_in_place(subtitles, skip_patterns)
@@ -867,6 +868,13 @@ def filter_skip_patterns_in_place(
     ]
 
 
+def apply_subtitle_delay_in_place(context: Context, subs: pysubs2.SSAFile) -> None:
+    delay = context.args.sub_delay
+    if delay:
+        logging.debug(f"Applying subtitle offset of {delay:.3f} milliseconds.")
+        subs.shift(ms=delay)
+
+
 def drop_comment_lines_in_place(subs: pysubs2.SSAFile) -> None:
     """Remove ASS/SSA events that players do not display."""
     logging.debug("Dropping commented-out subtitle lines…")
@@ -924,10 +932,6 @@ def filter_chapters_in_place(
 def extract_speech_timing_from_subtitles(
     context: Context, subtitles: pysubs2.SSAFile
 ) -> list[tuple[float, float]]:
-    delay = context.args.sub_delay
-    if delay != 0:
-        logging.debug(f"Applying subtitle offset of {delay:.3f} milliseconds.")
-        subtitles.shift(ms=delay)
     padding = context.config["padding"]
     segments = []
     for line in subtitles:
