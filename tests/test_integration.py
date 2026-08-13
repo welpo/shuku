@@ -735,6 +735,7 @@ def test_cover_art_disabled_via_config(tmp_path):
 MULTI_TRACK = "tests/test_files/input/multi_track.mkv"
 MULTI_TRACK_DIALOGUE_STREAM = "2"
 MULTI_TRACK_DIALOGUE = ["First line", "Second line", "Third line"]
+TITLED_TRACKS = "tests/test_files/input/titled_tracks.mkv"
 
 
 def write_subtitle_config(tmp_path, extra="", *, audio=False):
@@ -757,6 +758,26 @@ format = "srt"
 enabled = false
 """)
     return str(config_file)
+
+
+def test_untitled_tracks_resolve_to_the_one_with_dialogue(tmp_path):
+    config = write_subtitle_config(tmp_path, 'subtitle_languages = ["jpn"]')
+    result = run_shuku(MULTI_TRACK, str(tmp_path), config)
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    output_subs = pysubs2.load(str(tmp_path / "multi_track (condensed).srt"))
+    assert [line.text for line in output_subs] == MULTI_TRACK_DIALOGUE
+    # Both candidates are read once, and the winner is reused rather than re-extracted.
+    assert result.stderr.count("Extracting subtitles to") == 2
+
+
+def test_distinct_titled_tracks_keep_the_container_default(tmp_path):
+    config = write_subtitle_config(tmp_path, 'subtitle_languages = ["jpn"]')
+    result = run_shuku(TITLED_TRACKS, str(tmp_path), config)
+    assert result.returncode == 0, f"shuku failed: {result.stderr}"
+    output_subs = pysubs2.load(str(tmp_path / "titled_tracks (condensed).srt"))
+    assert [line.text for line in output_subs] == ["Default titled track"]
+    # Meaningful, distinct titles are metadata, not an invitation to count cues.
+    assert result.stderr.count("Extracting subtitles to") == 1
 
 
 def test_chapters_are_skipped_using_delayed_timings(tmp_path):

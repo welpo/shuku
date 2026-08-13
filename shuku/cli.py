@@ -799,6 +799,9 @@ def extract_subtitles(context: Context) -> str:
     if subtitle_languages:
         best_stream = sorted_streams[0]
         if best_stream["tags"].get("language", "").lower() in subtitle_languages:
+            best_stream = resolve_ambiguous_subtitle_streams(
+                context, sorted_streams, subtitle_languages
+            )
             logging.info(
                 f"Using subtitle stream: {best_stream['tags'].get('language')}"
             )
@@ -826,7 +829,7 @@ def sort_subtitle_streams(
 
 def subtitle_stream_sort_key(
     stream: dict[str, Any], preferred_languages: list[str]
-) -> tuple[int, int, int, int, str]:
+) -> tuple[int, int, int, int, str, int]:
     tags = stream.get("tags", {})
     language = tags.get("language", "").lower()
     title = tags.get("title", "").lower()
@@ -841,7 +844,63 @@ def subtitle_stream_sort_key(
         sum(word in title for word in PENALIZED_SUBTITLE_KEYWORDS),
         int(not disposition.get("default")),
         title,
+        int(stream.get("index", 0)),
     )
+
+
+def resolve_ambiguous_subtitle_streams(
+    context: Context,
+    sorted_streams: list[dict[str, Any]],
+    preferred_languages: list[str],
+) -> dict[str, Any]:
+    best_stream = sorted_streams[0]
+    rank = subtitle_stream_sort_key(best_stream, preferred_languages)[:3]
+    tied = [
+        stream
+        for stream in sorted_streams
+        if subtitle_stream_sort_key(stream, preferred_languages)[:3] == rank
+    ]
+    if len(tied) < 2:
+        return best_stream
+    titles = {
+        " ".join(stream.get("tags", {}).get("title", "").casefold().split())
+        for stream in tied
+    }
+    if len(titles) > 1:
+        return best_stream
+    logging.debug(
+        f"Found {len(tied)} equally-ranked subtitle streams; counting dialogue lines…"
+    )
+    line_counts: dict[int, int] = {}
+    for stream in tied:
+        try:
+            subtitle_path = extract_specific_subtitle(context, stream["index"])
+            line_counts[stream["index"]] = count_dialogue_lines(subtitle_path)
+        except Exception as e:
+            logging.warning(
+                f"Could not count lines in subtitle stream {stream['index']}: {e}"
+            )
+    if line_counts:
+        most_lines = max(line_counts.values())
+        fullest = [s for s in tied if line_counts.get(s["index"]) == most_lines]
+        if len(fullest) == 1:
+            logging.info(
+                f"Ambiguous subtitle streams (lines per stream: {line_counts}); "
+                f"using stream {fullest[0]['index']}, with the most dialogue."
+            )
+            return fullest[0]
+    logging.warning(
+        f"Found {len(tied)} equally-ranked subtitle streams "
+        f"({', '.join(str(s['index']) for s in tied)}); "
+        f"using {best_stream['index']}. Override with --sub-track-id."
+    )
+    return best_stream
+
+
+def count_dialogue_lines(subtitle_path: str) -> int:
+    """Count lines carrying speech, ignoring comments and styling-only events."""
+    subs = pysubs2.load(subtitle_path)
+    return sum(1 for line in subs if not line.is_comment and line.plaintext.strip())
 
 
 def extract_specific_subtitle(context: Context, stream_index: int) -> str:
@@ -856,6 +915,9 @@ def extract_specific_subtitle(context: Context, stream_index: int) -> str:
     output_path = os.path.join(
         context.temp_dir, f"subtitles_{stream_index}.{format_identifier}"
     )
+    if os.path.exists(output_path):
+        logging.debug(f"Reusing already extracted subtitle stream {stream_index}.")
+        return output_path
     logging.info(f"Extracting subtitles to {format_identifier} format…")
     ffmpeg = (
         FFmpeg()
