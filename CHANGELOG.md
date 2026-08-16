@@ -4,6 +4,12 @@ Welcome to the changelog for shuku. Here you will find a comprehensive list of a
 
 We use [Semantic Versioning](https://semver.org/), formatted as MAJOR.MINOR.PATCH. Major version changes involve significant (breaking) changes, minor versions introduce features and improvements in a backward compatible manner, and patch versions are for bug fixes and minor tweaks.
 
+## [0.0.10](https://github.com/welpo/shuku/compare/v0.0.9..v0.0.10) - 2026-08-16
+
+### 🔧 Miscellaneous tasks
+
+- *(cli)* Drop 'v' prefix from --version output ([eafa6bb](https://github.com/welpo/shuku/commit/eafa6bb905340e134182ac3826bfa8d39ede1b07)) by [@welpo](https://github.com/welpo)
+
 ## [0.0.9](https://github.com/welpo/shuku/compare/v0.0.8..v0.0.9) - 2026-08-13
 
 ### 🐛 Bug fixes
