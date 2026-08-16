@@ -293,7 +293,7 @@ def parse_arguments() -> argparse.Namespace:
         "-V",
         "--version",
         action="version",
-        version=f"{PROGRAM_NAME} v{VERSION}",
+        version=f"{PROGRAM_NAME} {VERSION}",
         help="Print version and exit.",
     )
     parser.add_argument(
@@ -507,7 +507,7 @@ def create_metadata(context: Context) -> dict[str, str]:
         "disc": season,
         "album": f"Condensed with {PROGRAM_NAME}",
         "date": str(time.gmtime().tm_year),
-        "encoded_by": f"{PROGRAM_NAME} v{VERSION}",
+        "encoded_by": f"{PROGRAM_NAME} {VERSION}",
         "comment": f"{context.basename} condensed with {PROGRAM_NAME} — {REPOSITORY}",
     }
     # See https://github.com/jonghwanhyeon/python-ffmpeg/issues/65.

@@ -139,7 +139,7 @@ def test_audio_codec_and_quality(
     assert metadata is not None, "Failed to get audio metadata"
     assert metadata["artist"] == "shuku", "Artist metadata is incorrect"
     assert metadata["genre"] == "Condensed Media", "Genre metadata is incorrect"
-    assert metadata["encoded_by"].startswith("shuku v"), (
+    assert metadata["encoded_by"].startswith("shuku "), (
         "Encoded_by metadata is incorrect"
     )
     assert metadata["date"] == str(time.gmtime().tm_year), "Date metadata is incorrect"
