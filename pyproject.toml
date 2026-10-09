@@ -34,7 +34,7 @@ shuku = "shuku.cli:main"
 dev = [
     "pytest>=9.0.0,<10",
     "pytest-cov>=7.0.0,<8",
-    "ruff>=0.16.0,<0.17",
+    "ruff>=0.17,<0.18",
     "ty>=0.0.65,<0.1",
 ]
 build = [
